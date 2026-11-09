@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>rascunhos</title>
+  <meta name="description" content="Projetos ainda em obra: Reino de Pedra, um MMO de estratégia medieval, e GlowUp, um editor de fotos que roda inteiro no navegador.">
+  <meta name="theme-color" content="#0a0b09">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/site.css">
+  <script>document.documentElement.classList.add('js', 'primeira-vez')</script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <canvas id="tinta" aria-hidden="true"></canvas>
+
+  <header class="topo">
+    <a class="topo-marca" href="#abertura">rascunhos<span>.app</span></a>
+    <nav id="menu" aria-label="Apps"></nav>
+  </header>
+
+  <main id="palco">
+    <section id="abertura" class="parada ativa" data-cena="palavra" data-rotulo="Início">
+      <div class="painel" tabindex="-1">
+        <h1 id="marca" class="marca item"><span class="marca-texto">rascunhos</span></h1>
+        <p class="versao item">
+          <span class="rasura">versão final</span>
+          <span>versão de hoje</span>
+          <span class="dica-tinta com-mouse">passe o mouse: a tinta está fresca</span>
+        </p>
+        <div id="portas" class="portas"></div>
+      </div>
+    </section>
+
+    <div id="paradas-apps"></div>
+
+    <section id="proximo" class="parada parada-proximo" data-cena="rabisco" data-rotulo="Próximo rascunho">
+      <div class="painel" tabindex="-1">
+        <div class="cena-alvo item"></div>
+        <div class="proximo-corpo">
+          <h2 class="item">Próximo rascunho</h2>
+          <p class="item">Ainda sem nome. Quando sair do papel, aparece aqui.</p>
+        </div>
+        <!-- Espaço reservado: se houver anúncios no futuro, eles entram aqui, nunca sobre as apps. -->
+      </div>
+    </section>
+  </main>
+
+  <a id="seguinte" class="seguinte" href="#reino">
+    <span id="seguinte-texto"></span>
+    <svg viewBox="0 0 24 40" width="14" height="24" fill="none" aria-hidden="true">
+      <path d="M12 2c-3 10 3 22 0 35M4 29l8 9 8-9" />
+    </svg>
+  </a>
+
+  <noscript>
+    <ul class="sem-script">
+      <li><a href="https://reino.rascunhos.app">Reino de Pedra</a>: MMO de estratégia medieval.</li>
+      <li><a href="https://glowup.rascunhos.app">GlowUp</a>: editor de fotos que roda inteiro no navegador.</li>
+    </ul>
+  </noscript>
+</body>
+</html>
