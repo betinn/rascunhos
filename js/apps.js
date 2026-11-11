@@ -122,7 +122,7 @@ export const apps = [
     botaoCurto: 'Ver na Google Play',
     resumo:
       'O cofre é um arquivo .GDSBX que você escolhe onde guardar, cifrado no próprio aparelho com AES-256-GCM e uma senha mestra. O app não pede internet: não há conta, servidor, anúncio nem rastreamento.',
-    nota: 'Para Android, na Google Play. Ainda em fase de testes e em desenvolvimento ativo.',
+    nota: 'Para Android, na Google Play.',
     botao: 'Ver na Google Play',
     detalhe: {
       rotulo: 'Como o GDSB guarda',
