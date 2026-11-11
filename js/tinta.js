@@ -29,7 +29,7 @@ precision highp sampler2DArray;
 layout(location=0) in vec4 aEstado;
 layout(location=1) in vec4 aSemente;
 uniform sampler2DArray uAlvos;
-uniform int uLado,uCenaA,uCenaB;
+uniform int uLado,uCenaA,uCenaB,uAbertura;
 uniform float uMix,uT,uDt,uEscrita,uSnap,uFluxo,uBoil,uMola,uAtrito,uCortina;
 uniform vec2 uOffA,uOffB,uRato,uRatoV,uTela;
 uniform float uRatoR,uRatoF;
@@ -54,9 +54,9 @@ void main(){
   float tipo=m<.5?a.w:b.w;
   float fase=m<.5?a.z:b.z;
 
-  // Só a palavra é escrita: antes da hora, a partícula fica solta pela tela.
+  // Só a abertura é escrita: antes da hora, a partícula fica solta pela tela.
   float ativo=1.;
-  if(uCenaA==0&&m<.5){
+  if(uCenaA<uAbertura&&m<.5){
     ativo=smoothstep(a.z,a.z+.012,uEscrita);
     alvo=mix(aSemente.yz*uTela,alvo,ativo);
   }
@@ -91,7 +91,9 @@ void main(){
 
   vec2 p=aEstado.xy,v=aEstado.zw;
   float dt=uDt;
-  float solto=4.*m*(1.-m);
+  // Na troca, só se solta quem muda de lugar: a palavra fica quieta quando o palco troca.
+  float muda=step(.5,distance(a.xy+uOffA,b.xy+uOffB)+abs(a.w-b.w));
+  float solto=4.*m*(1.-m)*muda;
   float folga=max(solto,1.-ativo);
   v+=curl(p*.0024+vec2(uT*.05,-uT*.03))*(uFluxo+folga*1500.)*dt;
   vec2 d=p-uRato;
@@ -122,7 +124,7 @@ layout(location=0) in vec4 aEstado;
 layout(location=1) in vec4 aSemente;
 uniform sampler2DArray uAlvos;
 uniform lowp sampler2DArray uCores;
-uniform int uLado,uCenaA,uCenaB;
+uniform int uLado,uCenaA,uCenaB,uAbertura;
 uniform float uMix,uT,uEscrita,uPonto,uGanho,uCortina;
 uniform vec3 uQuente,uIris,uLidA,uLidB;
 uniform vec4 uOlhoA,uOlhoB;
@@ -180,7 +182,7 @@ void main(){
     base=mix(base,vec3(.7,.86,1.),fb*.85);
     brilho*=1.+fb*1.7;
   }
-  if(uCenaA==0&&m<.5){
+  if(uCenaA<uAbertura&&m<.5){
     // Durante a escrita, só acende o que já chegou perto da caneta. A tempestade fica ao fundo.
     float nasceu=smoothstep(pa.z,pa.z+.012,uEscrita);
     if(uEscrita<1.4){nasceu*=mix(.05,1.,smoothstep(240.,24.,distance(p,pa.xy)));}
@@ -341,8 +343,14 @@ export function criarTinta(canvas, { particulas, dprMax }) {
   let texCores = null;
   let metas = [];
 
-  /** desenhos: lista de Desenho, um por camada. */
-  function definirCenas(desenhos) {
+  let camadasAbertura = 1;
+
+  /**
+   * desenhos: lista de desenhos, um por camada. As primeiras `abertura` camadas são da
+   * abertura, a única parada que a tinta escreve ao chegar.
+   */
+  function definirCenas(desenhos, { abertura = 1 } = {}) {
+    camadasAbertura = abertura;
     if (texAlvos) gl.deleteTexture(texAlvos);
     if (texCores) gl.deleteTexture(texCores);
     const L = desenhos.length;
@@ -489,6 +497,7 @@ export function criarTinta(canvas, { particulas, dprMax }) {
     gl.uniform1i(u.uLado, lado);
     gl.uniform1i(u.uCenaA, q.cenaA);
     gl.uniform1i(u.uCenaB, q.cenaB);
+    gl.uniform1i(u.uAbertura, camadasAbertura);
     gl.uniform1f(u.uMix, mx);
     gl.uniform1f(u.uT, q.t);
     gl.uniform1f(u.uDt, q.dt);
@@ -545,6 +554,7 @@ export function criarTinta(canvas, { particulas, dprMax }) {
     gl.uniform1i(p.uLado, lado);
     gl.uniform1i(p.uCenaA, q.cenaA);
     gl.uniform1i(p.uCenaB, q.cenaB);
+    gl.uniform1i(p.uAbertura, camadasAbertura);
     gl.uniform1f(p.uMix, mx);
     gl.uniform1f(p.uT, q.t);
     gl.uniform1f(p.uEscrita, q.escrita);

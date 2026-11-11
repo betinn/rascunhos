@@ -646,6 +646,151 @@ function desenharLuz(d, r) {
 }
 
 // ---------------------------------------------------------------------------
+// GDSB: o cadeado da marca no meio do disco de um cofre, e a digital que abre.
+// ---------------------------------------------------------------------------
+const MAGENTA = [0.85, 0.21, 0.83];
+const ROSA = [0.95, 0.48, 0.92];
+const BRANCO = [0.99, 0.99, 0.99];
+const ANIL = [0.54, 0.58, 0.77];
+
+/**
+ * A marca do GDSB, no mesmo desenho do ícone do app (caixa de 128): o arco do G em cima e o
+ * D deitado embaixo, cheio, com a fechadura vazada.
+ */
+function cadeado(d, cx, cy, tam, { mini = false } = {}) {
+  // A marca ocupa x de 22 a 106 e y de 18 a 106 no ícone: centro em (64, 62).
+  const e = tam / 88;
+  const tr = (pts) => pts.map(([x, y]) => [cx + (x - 64) * e, cy + (y - 62) * e]);
+  const G = [...arco(64, 42, 24, 24, -36.9, -326.9, 70), [84.1, 45], [71, 45]];
+  d.traco(tr(G), { peso: mini ? 26 : 34, sigma: Math.max(0.8, 4.1 * e), firme: true, cor: MAGENTA, brilho: 1.15 });
+  // Contorno do D
+  const D = [[22, 64], [106, 64], ...arco(64, 64, 42, 42, 0, 180, 60), [22, 64]];
+  d.traco(tr(D), { peso: mini ? 14 : 20, sigma: Math.max(0.6, 0.9 * e), firme: true, cor: BRANCO, brilho: 1.05 });
+  // Fechadura
+  d.traco(tr(arco(64, 79, 8, 8, 0, 360, 40)), { peso: 16, sigma: Math.max(0.5, 0.7 * e), cor: BRANCO, brilho: 1 });
+  d.traco(tr([[60.6, 86], [59, 99.5], [69, 99.5], [67.4, 86]]), { peso: 12, sigma: Math.max(0.5, 0.6 * e), cor: BRANCO, brilho: 0.9 });
+  // O D é cheio: poeira dentro do meio disco, menos na fechadura.
+  d.nuvem(
+    () => {
+      for (;;) {
+        const x = 22 + Math.random() * 84;
+        const y = 64 + Math.random() * 42;
+        if ((x - 64) ** 2 + (y - 64) ** 2 > 42 * 42) continue;
+        if ((x - 64) ** 2 + (y - 79) ** 2 < 10.5 * 10.5) continue;
+        if (y > 85 && y < 102 && Math.abs(x - 64) < 6) continue;
+        return tr([[x, y]])[0];
+      }
+    },
+    { peso: tam * (mini ? 9 : 14), cor: BRANCO, brilho: 0.5, alfa: 0.12 },
+  );
+}
+
+/** O disco de segredo de um cofre, com o cadeado no meio e a poeira cifrada em volta. */
+function desenharCofre(d, r, { mini = false } = {}) {
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const raio = Math.min(r.width, r.height) * (mini ? 0.46 : 0.43);
+  cadeado(d, cx, cy + raio * 0.03, raio * 0.92, { mini });
+
+  // Marcas do disco: uma longa a cada seis, e uma luz que corre em volta.
+  const marcas = mini ? 48 : 72;
+  for (let i = 0; i < marcas; i++) {
+    const a = (i / marcas) * Math.PI * 2 - Math.PI / 2;
+    const longa = i % 6 === 0;
+    const r0 = raio * (longa ? 0.86 : 0.9);
+    const r1 = raio * 0.97;
+    d.traco(
+      [[cx + Math.cos(a) * r0, cy + Math.sin(a) * r0], [cx + Math.cos(a) * r1, cy + Math.sin(a) * r1]],
+      { peso: longa ? 12 : 8, sigma: 0.6, cor: longa ? ROSA : ANIL, brilho: longa ? 0.9 : 0.6, tipo: TIPO.PULSO, fase0: i / marcas, fase1: i / marcas },
+    );
+  }
+  d.traco(arco(cx, cy, raio, raio, 0, 360, 160), { peso: 4, sigma: 0.6, cor: ANIL, brilho: 0.45 });
+  // A seta do disco, em cima
+  d.traco([[cx - raio * 0.05, cy - raio * 1.1], [cx, cy - raio * 1.01], [cx + raio * 0.05, cy - raio * 1.1]], { peso: 14, sigma: 0.7, cor: ROSA, brilho: 1 });
+
+  if (!mini) {
+    // Poeira cifrada: pontos soltos num anel por fora, como bytes à deriva.
+    d.nuvem(
+      () => {
+        const a = Math.random() * Math.PI * 2;
+        const k = 1.08 + Math.abs(gauss()) * 0.16;
+        return [cx + Math.cos(a) * raio * k, cy + Math.sin(a) * raio * k];
+      },
+      { peso: raio * 10, cor: MAGENTA, brilho: 0.5, alfa: 0.18, tipo: TIPO.BRUMA },
+    );
+  }
+}
+
+/** A digital da biometria, com a linha do leitor que passa e segue o ponteiro. */
+function desenharDigital(d, r) {
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height * 0.48;
+  const S = Math.min(r.width * 0.4, r.height * 0.36);
+  const rx = S;
+  const ry = S * 1.24;
+  const dentro = ([x, y]) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+
+  // Cristas: arcos aninhados que descem em pernas, com falhas, como uma digital de verdade.
+  const cristas = 11;
+  for (let k = 1; k <= cristas; k++) {
+    const rk = (k / cristas) * S * 0.98;
+    const perna = S * (1.25 - k * 0.035);
+    const pts = [];
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24;
+      pts.push([cx - rk * (1 - 0.18 * (1 - t) ** 2), cy + 0.12 * S + perna * (1 - t)]);
+    }
+    pts.push(...arco(cx, cy + 0.12 * S, rk, rk * 1.12, 180, 360, 40));
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24;
+      pts.push([cx + rk * (1 - 0.12 * t * t), cy + 0.12 * S + perna * 0.86 * t]);
+    }
+    // Corta em pedaços, com falhas curtas, e deixa de fora o que passa da borda.
+    let pedaco = [];
+    const fim = () => {
+      if (pedaco.length > 3) {
+        d.traco(pedaco, { peso: 9, sigma: Math.max(0.6, S * 0.006), cor: k % 3 === 0 ? BRANCO : ROSA, brilho: 0.85, tipo: TIPO.PULSO });
+      }
+      pedaco = [];
+    };
+    let falha = 0;
+    for (const p of pts) {
+      if (falha > 0) {
+        falha--;
+        fim();
+        continue;
+      }
+      if (!dentro(p)) {
+        fim();
+        continue;
+      }
+      pedaco.push(p);
+      if (Math.random() < 0.025) falha = 2 + Math.floor(Math.random() * 3);
+    }
+    fim();
+  }
+  d.traco([[cx, cy + 0.12 * S], [cx - S * 0.03, cy + 0.5 * S]], { peso: 10, sigma: 0.8, cor: ROSA, brilho: 0.85, tipo: TIPO.PULSO });
+
+  // A linha do leitor: a mesma da cortina do GlowUp, sem cortina nenhuma.
+  const larg = rx * 2.6;
+  const alt = ry * 2.3;
+  d.meta.cortina = { cx, cy, larg, alt };
+  d.traco([[cx, cy - ry * 1.08], [cx, cy + ry * 1.08]], { peso: 8, sigma: 0.7, cor: ROSA, brilho: 1.2, tipo: TIPO.LINHA_CORTINA });
+
+  // Cantos de leitor em volta
+  const mx = rx * 1.3;
+  const my = ry * 1.12;
+  const canto = S * 0.22;
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    d.traco(
+      [[cx + sx * mx, cy + sy * (my - canto)], [cx + sx * mx, cy + sy * my], [cx + sx * (mx - canto), cy + sy * my]],
+      { peso: 12, sigma: 0.8, cor: ANIL, brilho: 0.8 },
+    );
+  }
+  d.nuvem(() => [cx + gauss() * rx * 0.9, cy + gauss() * ry * 0.8], { peso: S * 8, cor: MAGENTA, brilho: 0.4, alfa: 0.1, tipo: TIPO.BRUMA });
+}
+
+// ---------------------------------------------------------------------------
 // Rabisco: a cena de quem ainda não tem desenho próprio.
 // ---------------------------------------------------------------------------
 function desenharRabisco(d, r, { mini = false } = {}) {
@@ -666,26 +811,79 @@ const CENA = {
   'reino-perto': { meta: { quente: BRASA, papel: [0.052, 0.042, 0.034], grade: 0.08, halo: 0.8 }, desenhar: desenharCastelo },
   glowup: { meta: { quente: SEGURANCA, papel: [0.043, 0.043, 0.047], grade: 0, halo: 0.8 }, desenhar: desenharOlho },
   'glowup-luz': { meta: { quente: SEGURANCA, papel: [0.043, 0.043, 0.047], grade: 0, halo: 0.75 }, desenhar: desenharLuz },
+  gdsb: { meta: { quente: ROSA, papel: [0.026, 0.033, 0.07], grade: 0.1, halo: 0.8 }, desenhar: desenharCofre },
+  'gdsb-digital': { meta: { quente: ROSA, papel: [0.026, 0.033, 0.07], grade: 0.06, halo: 0.75 }, desenhar: desenharDigital },
   rabisco: { meta: { quente: FLUO, papel: [0.039, 0.043, 0.035], grade: 0.8, halo: 0.6 }, desenhar: desenharRabisco },
 };
 
-/**
- * Monta a cena de uma parada.
- * contexto: { marca, portas: [{ cena, caixa }] } na abertura, { caixa } nas outras.
- */
-export function montarCena(nome, contexto) {
-  if (nome === 'palavra') {
-    // A palavra pede pouco efeito: halo baixo, quase sem tremido, para continuar legível.
-    const d = new Desenho({ quente: FLUO, papel: [0.039, 0.043, 0.035], grade: 0.7, halo: 0.22, tremido: 0.32 });
-    desenharPalavra(d, contexto.marca);
-    d.fasePadrao = [0.6, 1];
-    for (const { cena, caixa } of contexto.portas) {
-      (CENA[cena] || CENA.rabisco).desenhar(d, caixa, { mini: true });
-    }
-    return d;
-  }
+/** Monta a cena de uma parada, ajustada à caixa do .cena-alvo dela. */
+export function montarCena(nome, caixa) {
   const c = CENA[nome] || CENA.rabisco;
   const d = new Desenho(c.meta);
-  c.desenhar(d, contexto.caixa, { mini: false });
+  c.desenhar(d, caixa, { mini: false });
   return d;
+}
+
+/** Proporção das partículas da abertura que escrevem a palavra. */
+const FRACAO_PALAVRA = 0.38;
+const AUREO = 0.6180339887498949;
+
+/**
+ * Uma camada da abertura: a palavra mais a cena da app em destaque no palco.
+ * A palavra usa sempre as mesmas partículas, nos mesmos lugares, em todas as camadas. Assim,
+ * trocar a app em destaque só mexe no palco, e a palavra fica parada.
+ */
+class Abertura {
+  constructor(palavra, cena) {
+    this.palavra = palavra;
+    this.cena = cena;
+    this.meta = cena.meta;
+  }
+
+  escrever(N, pos, cor) {
+    // Quem é palavra: um padrão fixo e bem espalhado, que vale também para as primeiras K
+    // partículas quando o motor reduz a qualidade.
+    const ehPalavra = (i) => (i * AUREO) % 1 < FRACAO_PALAVRA;
+    let nP = 0;
+    for (let i = 0; i < N; i++) if (ehPalavra(i)) nP++;
+    const p = this.palavra;
+    if (!p.cache || p.cache.n !== nP) {
+      p.cache = { n: nP, pos: new Float32Array(nP * 4), cor: new Uint8Array(nP * 4) };
+      p.escrever(nP, p.cache.pos, p.cache.cor);
+    }
+    const nC = N - nP;
+    const cPos = new Float32Array(nC * 4);
+    const cCor = new Uint8Array(nC * 4);
+    this.cena.escrever(nC, cPos, cCor);
+    let a = 0;
+    let b = 0;
+    for (let i = 0; i < N; i++) {
+      const palavra = ehPalavra(i);
+      const fp = palavra ? p.cache.pos : cPos;
+      const fc = palavra ? p.cache.cor : cCor;
+      const j = palavra ? a++ : b++;
+      for (let c = 0; c < 4; c++) {
+        pos[i * 4 + c] = fp[j * 4 + c];
+        cor[i * 4 + c] = fc[j * 4 + c];
+      }
+    }
+  }
+}
+
+/**
+ * As camadas da abertura, uma por app: a palavra na caixa da marca e a cena de cada app na
+ * caixa do palco. Em palco pequeno, cada cena sai na versão simples.
+ */
+export function montarAbertura(marca, palco, cenas) {
+  const palavra = new Desenho();
+  desenharPalavra(palavra, marca);
+  const mini = palco.width < 460 || palco.height < 300;
+  return cenas.map((nome) => {
+    const c = CENA[nome] || CENA.rabisco;
+    // Perto da palavra, pouco efeito: halo baixo e quase sem tremido, para ela continuar legível.
+    const d = new Desenho({ ...c.meta, grade: 0.6, halo: Math.min(0.42, c.meta.halo), tremido: 0.32 });
+    d.fasePadrao = [0.6, 1];
+    c.desenhar(d, palco, { mini });
+    return new Abertura(palavra, d);
+  });
 }

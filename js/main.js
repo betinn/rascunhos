@@ -1,5 +1,5 @@
 import { apps } from './apps.js';
-import { montarCena, TRACOS_PALAVRA, CAIXA_PALAVRA } from './cenas.js';
+import { montarCena, montarAbertura, TRACOS_PALAVRA, CAIXA_PALAVRA } from './cenas.js';
 import { criarTinta } from './tinta.js';
 
 const raiz = document.documentElement;
@@ -9,25 +9,48 @@ const DURACAO_TROCA = 1350; // ms: quanto a tinta leva para virar outra cena
 // ---- Conteúdo vindo da lista de apps ------------------------------------------------
 const seta = '<svg viewBox="0 0 24 12" width="22" height="11" fill="none" aria-hidden="true"><path d="M1 6c7-1 14 1 21 0M17 1l5 5-5 5"/></svg>';
 
-document.getElementById('menu').innerHTML = [
-  '<a class="menu-inicio" href="#abertura" data-app="abertura">Início</a>',
-  ...apps.map((a) => `<a class="app-${a.id}" href="#${a.id}" data-app="${a.id}"><i></i>${a.nome}</a>`),
-].join('');
+const PLATAFORMA = { web: 'Web', android: 'Android' };
 
-document.getElementById('portas').innerHTML = apps
+/** Link para a app. Quando ele leva a uma loja, abre em outra aba e avisa o leitor de tela. */
+function linkApp(a, texto, classe = 'app-botao') {
+  const fora = a.loja ? ` target="_blank" rel="noopener"` : '';
+  const aviso = a.loja ? `<span class="so-leitor"> (abre a ${a.loja} em outra aba)</span>` : '';
+  return `<a class="${classe}" href="${a.url}"${fora}>${texto}${aviso} ${seta}</a>`;
+}
+
+const menu = document.getElementById('menu');
+menu.innerHTML = [
+  '<a class="menu-inicio" href="#abertura" data-app="abertura">Início</a>',
+  ...apps.map((a) => `<a class="app-${a.id}" href="#${a.id}" data-app="${a.id}" title="${a.nome}"><i></i><span class="menu-nome">${a.nome}</span></a>`),
+].join('');
+// Com muitas apps, o menu do computador mostra só o ponto de cada uma e o nome da atual.
+menu.classList.toggle('menu-compacto', apps.length > 4);
+
+// Abertura: um índice compacto e uma ficha da app em destaque, que a tinta desenha no palco.
+const indice = document.getElementById('indice');
+indice.style.setProperty('--n', apps.length);
+indice.classList.toggle('indice-longo', apps.length > 4);
+indice.innerHTML = `<ul>${apps
   .map(
-    (a) => `
-    <article class="porta app-${a.id} item">
-      <div class="porta-texto">
-        <p class="app-genero">${a.genero}</p>
-        <h2 class="app-nome">${a.nome}</h2>
-        <p class="porta-linha">${a.linha}</p>
-        <div class="porta-acoes">
-          <a class="app-botao" href="${a.url}">${a.botaoCurto} ${seta}</a>
-          <a class="porta-mais" href="#${a.id}" aria-label="Saiba mais sobre ${a.nome}">Saiba mais</a>
-        </div>
+    (a, k) => `
+    <li><a class="indice-app app-${a.id}" href="#${a.id}" data-foco="${k}">
+      <i></i><span class="indice-nome">${a.nome}</span>
+      <span class="indice-plataforma">${PLATAFORMA[a.plataforma] || a.plataforma}</span>
+    </a></li>`,
+  )
+  .join('')}</ul>`;
+
+document.getElementById('fichas').innerHTML = apps
+  .map(
+    (a, k) => `
+    <article class="ficha app-${a.id}" data-ficha="${k}" aria-labelledby="ficha-${a.id}">
+      <p class="app-genero">${a.genero} · ${PLATAFORMA[a.plataforma] || a.plataforma}</p>
+      <h2 class="app-nome" id="ficha-${a.id}">${a.nome}</h2>
+      <p class="ficha-linha">${a.linha}</p>
+      <div class="ficha-acoes">
+        ${linkApp(a, a.botaoCurto)}
+        <a class="ficha-mais" href="#${a.id}">Saiba mais<span class="so-leitor"> sobre ${a.nome}</span></a>
       </div>
-      <div class="cena-alvo" data-porta="${a.cena}"></div>
     </article>`,
   )
   .join('');
@@ -47,7 +70,7 @@ function htmlDetalhe(a) {
           <ul class="exemplos">
             ${d.exemplos.map((e) => `<li class="item"><h3>${e.titulo}</h3><p>${e.texto}</p></li>`).join('')}
           </ul>
-          <a class="app-botao item" href="${a.url}">${a.botao} ${seta}</a>
+          ${linkApp(a, a.botao, 'app-botao item')}
         </div>
       </div>
     </section>`;
@@ -64,7 +87,7 @@ document.getElementById('paradas-apps').innerHTML = apps
           <h2 class="app-nome item">${a.nome}</h2>
           <p class="app-resumo item">${a.resumo}</p>
           ${a.nota ? `<p class="app-nota item">${a.nota}</p>` : ''}
-          <a class="app-botao item" href="${a.url}">${a.botao} ${seta}</a>
+          ${linkApp(a, a.botao, 'app-botao item')}
         </div>
       </div>
     </section>
@@ -95,7 +118,85 @@ const linksMenu = [...document.querySelectorAll('#menu a')];
 
 let ativa = 0;
 let ultimoGesto = -1e9;
-const tinta = { troca: null };
+const tinta = { troca: null, destaque: null };
+
+// ---- A app em destaque na abertura -------------------------------------------------
+// Sozinha, a abertura passa de uma app para a outra. Quando a pessoa escolhe uma no índice,
+// ela para de girar. Com o ponteiro no palco ou na ficha, ela espera.
+const GIRO_MS = 6500;
+const palco = document.getElementById('palco');
+const linksIndice = [...indice.querySelectorAll('[data-foco]')];
+const fichas = [...document.querySelectorAll('[data-ficha]')];
+let foco = -1;
+let giro = 0;
+let giroLivre = true;
+let giroEspera = false;
+
+function destacar(k, { pessoa = false } = {}) {
+  k = (k + apps.length) % apps.length;
+  if (pessoa) pararGiro();
+  if (k !== foco) {
+    foco = k;
+    linksIndice.forEach((l, j) => l.classList.toggle('em-foco', j === k));
+    fichas.forEach((f, j) => f.classList.toggle('ativa', j === k));
+    palco.className = `palco cena-alvo item app-${apps[k].id}`;
+    // No celular, o índice é uma fileira que rola: a app escolhida vem para o meio.
+    const l = linksIndice[k];
+    if (indice.scrollWidth > indice.clientWidth + 2) {
+      indice.scrollTo({ left: l.offsetLeft - (indice.clientWidth - l.offsetWidth) / 2, behavior: reduzido.matches ? 'auto' : 'smooth' });
+    }
+    tinta.destaque?.(k);
+  }
+  agendarGiro();
+}
+
+function agendarGiro() {
+  clearTimeout(giro);
+  indice.classList.remove('girando');
+  if (!giroLivre || giroEspera || reduzido.matches || ativa !== 0 || document.hidden) return;
+  void indice.offsetWidth; // recomeça a barrinha do tempo
+  indice.classList.add('girando');
+  giro = setTimeout(() => ativa === 0 && destacar(foco + 1), GIRO_MS);
+}
+
+function pararGiro() {
+  giroLivre = false;
+  clearTimeout(giro);
+  indice.classList.remove('girando');
+}
+
+indice.style.setProperty('--giro', `${GIRO_MS}ms`);
+destacar(0);
+
+// Mouse: passar por cima destaca. Toque: o primeiro toque destaca, o segundo entra.
+indice.addEventListener('pointerover', (e) => {
+  const l = e.target.closest('[data-foco]');
+  if (l && e.pointerType === 'mouse') destacar(+l.dataset.foco, { pessoa: true });
+});
+indice.addEventListener('focusin', (e) => {
+  const l = e.target.closest('[data-foco]');
+  if (l?.matches(':focus-visible')) destacar(+l.dataset.foco, { pessoa: true });
+});
+indice.addEventListener('click', (e) => {
+  const l = e.target.closest('[data-foco]');
+  if (!l || +l.dataset.foco === foco) return;
+  e.preventDefault();
+  e.stopPropagation();
+  destacar(+l.dataset.foco, { pessoa: true });
+});
+for (const el of [palco, document.getElementById('fichas')]) {
+  el.addEventListener('pointerenter', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    giroEspera = true;
+    agendarGiro();
+  });
+  el.addEventListener('pointerleave', () => {
+    giroEspera = false;
+    agendarGiro();
+  });
+}
+reduzido.addEventListener('change', agendarGiro);
+document.addEventListener('visibilitychange', agendarGiro);
 
 function carregarCapturas(i) {
   paradas[i]?.querySelectorAll('img[data-src]').forEach((img) => {
@@ -112,6 +213,11 @@ function atualizarAoRedor() {
   for (const l of linksMenu) {
     if (l.dataset.app === app) l.setAttribute('aria-current', 'true');
     else l.removeAttribute('aria-current');
+  }
+  // No celular, o menu de baixo rola para o lado quando há muitas apps: a atual fica à vista.
+  const atual = menu.querySelector('[aria-current]');
+  if (atual && menu.scrollWidth > menu.clientWidth + 2) {
+    menu.scrollTo({ left: atual.offsetLeft - (menu.clientWidth - atual.offsetWidth) / 2, behavior: 'auto' });
   }
   const ultima = ativa === paradas.length - 1;
   const destino = ultima ? paradas[0] : paradas[ativa + 1];
@@ -140,6 +246,7 @@ function irPara(i, { focar = false } = {}) {
   history.replaceState(null, '', hash);
   if (focar) paradas[i].querySelector('.painel').focus({ preventScroll: true });
   tinta.troca?.(i);
+  agendarGiro();
 }
 
 /** O painel ainda tem o que rolar nessa direção? Tela baixa ou zoom alto chegam aqui. */
@@ -189,7 +296,13 @@ addEventListener(
   'touchstart',
   (e) => {
     const t = e.touches[0];
-    toque = { x: t.clientX, y: t.clientY, topo: paradas[ativa].querySelector('.painel').scrollTop, dedos: e.touches.length };
+    toque = {
+      x: t.clientX,
+      y: t.clientY,
+      topo: paradas[ativa].querySelector('.painel').scrollTop,
+      dedos: e.touches.length,
+      noIndice: indice.contains(e.target),
+    };
   },
   { passive: true },
 );
@@ -201,7 +314,13 @@ addEventListener(
     const dx = t.clientX - toque.x;
     const dy = t.clientY - toque.y;
     const rolou = paradas[ativa].querySelector('.painel').scrollTop !== toque.topo;
+    const noIndice = toque.noIndice;
     toque = null;
+    // Na abertura, deslizar para o lado troca a app em destaque. O índice rola sozinho.
+    if (ativa === 0 && !noIndice && Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+      destacar(foco + (dx < 0 ? 1 : -1), { pessoa: true });
+      return;
+    }
     if (rolou || Math.abs(dy) < 44 || Math.abs(dy) < Math.abs(dx) * 1.3) return;
     const dir = dy < 0 ? 1 : -1;
     if (!painelRola(dir)) passo(dir);
@@ -217,6 +336,8 @@ addEventListener('keydown', (e) => {
     if (painelRola(para)) return;
     e.preventDefault();
     if (!e.repeat) passo(para);
+  } else if (ativa === 0 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    destacar(foco + (e.key === 'ArrowRight' ? 1 : -1), { pessoa: true });
   } else if (e.key === 'Home') {
     irPara(0, { focar: true });
   } else if (e.key === 'End') {
@@ -260,9 +381,6 @@ const motor = criarTinta(canvas, {
   dprMax: pequeno ? 1.5 : 1.5,
 });
 
-if (!motor) raiz.classList.add('sem-webgl');
-else iniciarTinta();
-
 // As cores que a íris passeia: âmbar, jade, azul-gelo e violeta.
 const PALETA_IRIS = [
   [1.0, 0.64, 0.3],
@@ -279,6 +397,10 @@ function corDaIris(t) {
   const u = k * k * (3 - 2 * k);
   return de.map((v, c) => v + (para[c] - v) * u);
 }
+
+// Só agora: com movimento reduzido, iniciarTinta já desenha um quadro e precisa da paleta acima.
+if (!motor) raiz.classList.add('sem-webgl');
+else iniciarTinta();
 
 function iniciarTinta() {
   let vh = 1;
@@ -305,17 +427,13 @@ function iniciarTinta() {
     vw = canvas.clientWidth;
     vh = canvas.clientHeight;
     motor.redimensionar(vw, vh, devicePixelRatio || 1);
-    const desenhos = paradas.map((p) => {
-      if (p.dataset.cena === 'palavra') {
-        return montarCena('palavra', {
-          marca: caixa(document.getElementById('marca')),
-          portas: [...p.querySelectorAll('[data-porta]')].map((el) => ({ cena: el.dataset.porta, caixa: caixa(el) })),
-        });
-      }
-      return montarCena(p.dataset.cena, { caixa: caixa(p.querySelector('.cena-alvo')) });
-    });
+    // Camadas: uma por app na abertura (a palavra e a app no palco), depois uma por parada.
+    const desenhos = [
+      ...montarAbertura(caixa(document.getElementById('marca')), caixa(palco), apps.map((a) => a.cena)),
+      ...paradas.slice(1).map((p) => montarCena(p.dataset.cena, caixa(p.querySelector('.cena-alvo')))),
+    ];
     metas = desenhos.map((d) => d.meta);
-    motor.definirCenas(desenhos);
+    motor.definirCenas(desenhos, { abertura: apps.length });
   }
   construir();
 
@@ -347,34 +465,45 @@ function iniciarTinta() {
   let olharAte = 0;
 
   // A troca de cena corre no relógio, não na rolagem: tinta e textos andam juntos.
-  let cenaDe = ativa;
-  let cenaPara = ativa;
+  // cenaDe e cenaPara são camadas do motor; paradaPara é a parada, que move o papel.
+  const camada = (i) => (i === 0 ? foco : apps.length - 1 + i);
+  let cenaDe = camada(ativa);
+  let cenaPara = cenaDe;
+  let paradaPara = ativa;
   let inicioTroca = -1e9;
+  let duracao = DURACAO_TROCA;
   let sentido = 1;
   let papelY = ativa * 260;
   let papelDe = papelY;
 
-  tinta.troca = (i) => {
-    sentido = i > cenaPara ? 1 : -1;
+  function trocar(c, parada, sent, ms) {
+    sentido = sent;
     cenaDe = cenaPara;
-    cenaPara = i;
+    cenaPara = c;
+    paradaPara = parada;
+    duracao = ms;
     inicioTroca = performance.now();
     papelDe = papelY;
     if (reduzido.matches) desenhoParado();
+  }
+  tinta.troca = (i) => trocar(camada(i), i, i > paradaPara ? 1 : -1, DURACAO_TROCA);
+  // Trocar a app do palco não desliza nada: só o desenho do palco se refaz.
+  tinta.destaque = (k) => {
+    if (paradaPara === 0) trocar(k, 0, 0, 950);
   };
 
   const suave = (x) => x * x * (3 - 2 * x);
 
   function montarQuadro(dt, snap) {
     const agora = performance.now();
-    const u = snap ? 1 : Math.min(1, (agora - inicioTroca) / DURACAO_TROCA);
+    const u = snap ? 1 : Math.min(1, (agora - inicioTroca) / duracao);
     if (u >= 1) cenaDe = cenaPara;
     const mix = cenaDe === cenaPara ? 0 : suave(u);
     // Uma cena sai para um lado e a outra chega do outro, como páginas no mesmo papel.
     const anda = vh * 0.16;
     const offA = [0, -sentido * anda * mix];
     const offB = [0, sentido * anda * (1 - mix)];
-    papelY = papelDe + (cenaPara * 260 - papelDe) * suave(u);
+    papelY = papelDe + (paradaPara * 260 - papelDe) * suave(u);
 
     // A cortina do antes e depois segue o ponteiro; sem ele, passeia sozinha.
     const c = metas[cenaPara].cortina;
@@ -445,7 +574,7 @@ function iniciarTinta() {
       rato: [rato.sx, rato.sy],
       ratoV: [rato.vx, rato.vy],
       ratoF: snap ? 0 : forca,
-      papelY: snap ? cenaPara * 260 : papelY,
+      papelY: snap ? paradaPara * 260 : papelY,
       cortina,
       snap,
     };

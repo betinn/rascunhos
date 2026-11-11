@@ -105,6 +105,36 @@ a {
   background: #f4f1ec;
   color: #0b0b0c;
 }
+/* GDSB: o rosa e o anil do ícone, o nome em letra de máquina e um botão com cara de chave. */
+.app-gdsb {
+  --cor-app: #f27beb;
+  --cor-app-tinta: #060b24;
+  --raio-app: 12px;
+  --fonte-nome: var(--mono);
+  --escala-nome: 0.86;
+}
+.app-gdsb .app-nome {
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.app-gdsb .app-botao {
+  background: linear-gradient(120deg, #d936d3, #f27beb);
+  color: #060b24;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.app-gdsb .detalhe-titulo {
+  font-family: var(--texto);
+  letter-spacing: -0.01em;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* ---- O palco: uma tela por vez, sem rolagem da página ---- */
 .js,
@@ -254,24 +284,53 @@ a {
 .menu-inicio {
   display: none !important;
 }
+.js #menu {
+  transition: opacity 0.4s, visibility 0s;
+}
+.em-abertura #menu {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0s 0.3s;
+}
+/* Muitas apps: fora a atual, cada uma vira só o ponto. O nome continua para o leitor. */
+@media (min-aspect-ratio: 1/1) {
+  .menu-compacto a:not([aria-current]) {
+    padding: 0 17px;
+  }
+  .menu-compacto a:not([aria-current]) .menu-nome {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 
 /* ---- Abertura ---- */
+/* A palavra em cima, a ficha da app em destaque e o índice à esquerda; à direita, o palco
+   onde a tinta desenha a app em destaque. Mais apps só alongam o índice. */
 .js #abertura .painel,
 #abertura .painel {
   display: grid;
-  grid-template-rows: minmax(110px, 34vh) auto minmax(250px, 1fr);
-  gap: 8px;
-  padding: 18px var(--margem) calc(var(--base-altura) + 8px);
+  grid-template-columns: minmax(360px, 5fr) minmax(0, 7fr);
+  grid-template-rows: clamp(96px, 19vh, 180px) auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "marca palco"
+    "versao palco"
+    "ficha palco"
+    "indice palco";
+  column-gap: clamp(24px, 3.4vw, 56px);
+  row-gap: 8px;
+  padding: 26px var(--margem) calc(var(--base-altura) + 6px);
 }
 
 .marca {
+  grid-area: marca;
   margin: 0;
   position: relative;
   min-height: 0;
   font-weight: 400;
-  /* a palavra fica à esquerda do menu no topo */
-  width: min(100%, 1180px);
-  justify-self: center;
 }
 /* O nome é desenhado pela tinta. O texto fica para leitor de tela e para quem está sem JS. */
 .js .marca-texto {
@@ -308,12 +367,13 @@ a {
 }
 
 .versao {
+  grid-area: versao;
   margin: 0;
   font-family: var(--mono);
   font-size: 13px;
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 2px 14px;
   color: var(--giz-2);
 }
@@ -341,52 +401,59 @@ a {
   }
 }
 
-.portas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-  gap: clamp(12px, 1.6vw, 22px);
-  min-height: 0;
-  margin-top: 6px;
+.palco {
+  grid-area: palco;
+}
+/* Sem WebGL, o palco guarda ao menos a cor da app em destaque. */
+.sem-webgl .palco::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--cor-app) 26%, transparent), transparent);
+  transition: background 0.6s;
 }
 
-.porta {
-  position: relative;
+/* As fichas ficam empilhadas na mesma célula: a mais alta dita a altura, e trocar de app não
+   mexe no resto da página nem no palco. */
+.fichas {
+  grid-area: ficha;
   display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr);
-  gap: 14px;
+  align-self: center;
   min-height: 0;
-  padding: clamp(16px, 2vw, 28px);
-  border: 1px solid color-mix(in srgb, var(--cor-app) 42%, transparent);
-  border-radius: 16px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--cor-app) 8%, rgb(10 11 9 / 0.72)), rgb(10 11 9 / 0.32) 62%);
-  transition: border-color 0.25s;
 }
-.porta:hover {
-  border-color: var(--cor-app);
+.ficha {
+  grid-area: 1 / 1;
+  align-self: center;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s, transform 0.4s var(--curva), visibility 0s 0.3s;
 }
-.porta-texto {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
+.ficha.ativa {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.55s 0.12s, transform 0.8s var(--curva) 0.12s, visibility 0s;
 }
-.porta .app-nome {
-  font-size: calc(clamp(27px, 3.1vw, 46px) * var(--escala-nome, 1));
-  margin-bottom: 8px;
+.ficha .app-nome {
+  font-size: calc(clamp(36px, 4.4vw, 68px) * var(--escala-nome, 1));
+  margin-bottom: 10px;
 }
-.porta-linha {
-  margin: 0 0 16px;
-  color: rgb(244 242 230 / 0.84);
-  font-size: clamp(15px, 1.2vw, 17px);
-  line-height: 1.35;
+.ficha-linha {
+  margin: 0 0 18px;
+  max-width: 36ch;
+  font-size: clamp(16px, 1.3vw, 19px);
+  line-height: 1.38;
+  color: rgb(244 242 230 / 0.88);
 }
-.porta-acoes {
+.ficha-acoes {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 16px;
+  gap: 8px 20px;
 }
-.porta-mais {
+.ficha-mais {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -395,9 +462,112 @@ a {
   color: var(--cor-app);
   text-underline-offset: 4px;
 }
-.porta .app-botao {
+
+/* O índice: uma linha por app. Passar o mouse destaca, clicar entra. */
+.indice {
+  grid-area: indice;
+  position: relative;
+  min-width: 0;
+}
+.indice ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  border-top: 1px solid rgb(244 242 230 / 0.14);
+}
+.indice-longo ul {
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+}
+.indice-app {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   min-height: 46px;
-  padding: 0 18px;
+  padding: 0 12px 0 10px;
+  text-decoration: none;
+  color: var(--giz-2);
+  border-bottom: 1px solid rgb(244 242 230 / 0.12);
+  transition: color 0.25s, background 0.25s;
+}
+.indice-app i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-app);
+  opacity: 0.55;
+  transition: opacity 0.25s, box-shadow 0.25s;
+}
+.indice-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--fonte-nome);
+  font-size: calc(19px * var(--escala-nome, 1));
+  font-weight: 600;
+}
+.app-reino .indice-nome {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.app-glowup .indice-nome {
+  font-style: italic;
+  font-weight: 400;
+}
+.app-gdsb .indice-nome {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.indice-plataforma {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 8px;
+  border: 1px solid rgb(244 242 230 / 0.22);
+  border-radius: 999px;
+}
+.indice-app:hover,
+.indice-app.em-foco {
+  color: var(--giz);
+}
+.indice-app.em-foco {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cor-app) 15%, transparent), transparent 85%);
+}
+.indice-app.em-foco i {
+  opacity: 1;
+  box-shadow: 0 0 10px var(--cor-app);
+}
+.indice-app.em-foco .indice-nome {
+  color: var(--cor-app);
+}
+/* A barrinha do tempo até a próxima app, quando a abertura gira sozinha */
+.indice-app::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--cor-app);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.indice.girando .em-foco::after {
+  animation: giro var(--giro, 6s) linear forwards;
+}
+@keyframes giro {
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* ---- Peças comuns ---- */
@@ -605,12 +775,22 @@ a {
   color: var(--fluo);
 }
 
-/* Sem JS: páginas em sequência, sem tinta. */
+/* Sem JS: páginas em sequência, sem tinta. Na abertura, a palavra e a lista de apps. */
 html:not(.js) .parada {
   min-height: 100vh;
 }
-.sem-script {
+html:not(.js) #abertura .painel {
+  display: block;
   padding: 24px var(--margem);
+}
+html:not(.js) :is(.palco, .fichas, .indice, .dica-tinta, #menu) {
+  display: none;
+}
+.sem-script {
+  margin: 28px 0 0;
+  padding: 0 0 0 1.2em;
+  font-size: 18px;
+  line-height: 1.7;
 }
 
 /* ---- Telas baixas de computador ---- */
@@ -621,8 +801,19 @@ html:not(.js) .parada {
   }
   .js #abertura .painel,
   #abertura .painel {
-    grid-template-rows: minmax(90px, 27vh) auto minmax(220px, 1fr);
-    padding-top: 10px;
+    grid-template-rows: clamp(84px, 17vh, 130px) auto minmax(0, 1fr) auto;
+    padding-top: 16px;
+  }
+  .ficha .app-nome {
+    font-size: calc(clamp(32px, 3.8vw, 52px) * var(--escala-nome, 1));
+    margin-bottom: 6px;
+  }
+  .ficha-linha {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  .indice-app {
+    min-height: 44px;
   }
   .exemplos {
     gap: 10px 18px;
@@ -632,9 +823,6 @@ html:not(.js) .parada {
   }
   .app-resumo {
     font-size: 16px;
-  }
-  .porta .app-nome {
-    font-size: calc(clamp(25px, 2.8vw, 36px) * var(--escala-nome, 1));
   }
 }
 
@@ -654,19 +842,39 @@ html:not(.js) .parada {
   }
   .js #abertura .painel,
   #abertura .painel {
-    display: block;
-    padding-top: 56px;
+    grid-template-columns: minmax(330px, 1fr) minmax(0, 0.9fr);
+    grid-template-rows: 64px auto minmax(0, 1fr) auto;
+    row-gap: 6px;
+    padding-top: 12px;
+    padding-bottom: 10px;
   }
-  .marca {
-    height: 110px;
-    margin: 0 auto 6px;
+  .versao {
+    font-size: 12px;
   }
-  .portas {
-    margin-top: 12px;
-    padding-bottom: 40px;
+  .ficha .app-nome {
+    font-size: calc(30px * var(--escala-nome, 1));
+    margin-bottom: 4px;
   }
-  .porta {
-    min-height: 200px;
+  .ficha .app-genero {
+    margin-bottom: 4px;
+  }
+  .ficha-linha {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .ficha .app-botao {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+  .indice ul {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+  }
+  .indice-app {
+    min-height: 44px;
+  }
+  .indice-plataforma {
+    display: none;
   }
   .parada-app .painel,
   .parada-detalhe .painel {
@@ -713,10 +921,10 @@ html:not(.js) .parada {
     display: inline-flex !important;
     flex: 1 0 auto;
     justify-content: center;
-    gap: 7px;
+    gap: 6px;
     min-height: 48px;
     margin-block: 7px;
-    padding: 0 12px;
+    padding: 0 10px;
     font-size: 14.5px;
     border: 0;
     border-radius: 12px;
@@ -737,70 +945,82 @@ html:not(.js) .parada {
   .em-abertura .seguinte {
     display: none;
   }
+  /* Na abertura, o índice ocupa o lugar do menu, embaixo, ao alcance do polegar. */
+  .em-abertura #menu {
+    display: none;
+  }
 
-  /* Abertura: palavra grande em cima, um cartão por app, sem sobrar nem faltar. */
+  /* Abertura: a palavra em cima, o palco, a ficha e a fileira de apps embaixo. */
   .js #abertura .painel,
   #abertura .painel {
-    grid-template-rows: clamp(84px, 16vh, 150px) auto minmax(0, 1fr);
-    gap: 4px;
-    padding: 12px 12px calc(var(--menu-altura) + 12px);
-  }
-  .marca {
-    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: clamp(62px, 12vh, 120px) auto minmax(110px, 1fr) auto auto;
+    grid-template-areas: "marca" "versao" "palco" "ficha" "indice";
+    row-gap: 6px;
+    padding: calc(12px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom));
   }
   .versao {
     font-size: 12px;
+    justify-content: center;
   }
-  .portas {
-    grid-template-columns: 1fr;
-    grid-auto-rows: minmax(186px, 1fr);
-    margin-top: 8px;
-    gap: 10px;
+  .ficha .app-genero {
+    margin-bottom: 4px;
   }
-  /* Cartão: texto à esquerda, tinta à direita e os botões numa linha só, embaixo. */
-  .porta {
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: 0 8px;
-    padding: 12px 14px;
-  }
-  .porta-texto {
-    display: contents;
-  }
-  .porta .app-genero {
-    display: none;
-  }
-  .porta .app-nome {
-    grid-column: 1;
-    grid-row: 1;
-    font-size: calc(clamp(23px, 6.8vw, 34px) * var(--escala-nome, 1));
+  .ficha .app-nome {
+    font-size: calc(clamp(30px, 9vw, 44px) * var(--escala-nome, 1));
     margin-bottom: 6px;
   }
-  .porta-linha {
-    grid-column: 1;
-    grid-row: 2;
-    font-size: 14.5px;
-    line-height: 1.3;
-    margin-bottom: 8px;
-  }
-  .porta .cena-alvo {
-    grid-column: 2;
-    grid-row: 1 / 3;
-  }
-  .porta-acoes {
-    grid-column: 1 / -1;
-    grid-row: 3;
-    flex-wrap: nowrap;
-    gap: 12px;
-  }
-  .porta .app-botao {
-    min-height: 44px;
-    padding: 0 14px;
-    gap: 8px;
+  .ficha-linha {
     font-size: 15px;
+    line-height: 1.34;
+    margin-bottom: 12px;
   }
-  .porta-mais {
-    font-size: 14.5px;
+  .ficha-acoes {
+    flex-wrap: nowrap;
+    gap: 16px;
+  }
+  .ficha .app-botao {
+    width: auto;
+    min-height: 48px;
+    padding: 0 20px;
+  }
+  /* Uma fileira que rola para o lado: cabe qualquer número de apps. */
+  .indice {
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    margin: 4px -16px 0;
+    padding: 2px 16px 4px;
+  }
+  .indice::-webkit-scrollbar {
+    display: none;
+  }
+  .indice ul,
+  .indice-longo ul {
+    display: flex;
+    gap: 8px;
+    width: max-content;
+    border: 0;
+  }
+  .indice-app {
+    min-height: 48px;
+    padding: 0 16px 0 14px;
+    border: 1px solid rgb(244 242 230 / 0.2);
+    border-radius: 999px;
+    scroll-snap-align: center;
+  }
+  .indice-app.em-foco {
+    border-color: var(--cor-app);
+    background: color-mix(in srgb, var(--cor-app) 14%, rgb(10 11 9 / 0.6));
+  }
+  .indice-app::after {
+    left: 16px;
+    right: 16px;
+    bottom: 7px;
+    height: 1.5px;
+  }
+  .indice-plataforma {
+    display: none;
   }
 
   /* Seções: a tinta em cima e o texto embaixo, perto do polegar. */
@@ -841,9 +1061,6 @@ html:not(.js) .parada {
   .app-botao {
     width: 100%;
     justify-content: center;
-  }
-  .porta .app-botao {
-    width: auto;
   }
   .detalhe-titulo {
     font-size: clamp(24px, 7vw, 34px);
@@ -897,9 +1114,13 @@ html:not(.js) .parada {
   .parada-app .app-nota {
     font-size: 13px;
   }
-  .porta-linha {
-    font-size: 13.5px;
-    line-height: 1.28;
+  .ficha-linha {
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .ficha .app-nome {
+    margin-bottom: 4px;
   }
 }
 

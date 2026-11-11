@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>rascunhos</title>
-  <meta name="description" content="Projetos ainda em obra: Reino de Pedra, um MMO de estratégia medieval, e GlowUp, um editor de fotos que roda inteiro no navegador.">
+  <meta name="description" content="Projetos ainda em obra: Reino de Pedra, um MMO de estratégia medieval; GlowUp, um editor de fotos que roda inteiro no navegador; e GDSB, um gerenciador de senhas offline para Android.">
   <meta name="theme-color" content="#0a0b09">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -20,7 +20,7 @@
     <nav id="menu" aria-label="Apps"></nav>
   </header>
 
-  <main id="palco">
+  <main id="paradas">
     <section id="abertura" class="parada ativa" data-cena="palavra" data-rotulo="Início">
       <div class="painel" tabindex="-1">
         <h1 id="marca" class="marca item"><span class="marca-texto">rascunhos</span></h1>
@@ -29,7 +29,16 @@
           <span>versão de hoje</span>
           <span class="dica-tinta com-mouse">passe o mouse: a tinta está fresca</span>
         </p>
-        <div id="portas" class="portas"></div>
+        <div id="palco" class="palco cena-alvo item"></div>
+        <div id="fichas" class="fichas item"></div>
+        <nav id="indice" class="indice item" aria-label="Índice das apps"></nav>
+        <noscript>
+          <ul class="sem-script">
+            <li><a href="https://reino.rascunhos.app">Reino de Pedra</a>: MMO de estratégia medieval.</li>
+            <li><a href="https://glowup.rascunhos.app">GlowUp</a>: editor de fotos que roda inteiro no navegador.</li>
+            <li><a href="https://play.google.com/store/apps/details?id=gdsb.app">GDSB</a>: gerenciador de senhas offline, para Android.</li>
+          </ul>
+        </noscript>
       </div>
     </section>
 
@@ -54,11 +63,5 @@
     </svg>
   </a>
 
-  <noscript>
-    <ul class="sem-script">
-      <li><a href="https://reino.rascunhos.app">Reino de Pedra</a>: MMO de estratégia medieval.</li>
-      <li><a href="https://glowup.rascunhos.app">GlowUp</a>: editor de fotos que roda inteiro no navegador.</li>
-    </ul>
-  </noscript>
 </body>
 </html>

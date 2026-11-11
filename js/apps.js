@@ -3,11 +3,14 @@
 //
 // id          identificador curto: vira a âncora (#id) e a classe .app-id no CSS
 // nome        nome mostrado na página
-// url         endereço da app (navegação completa, link normal)
+// url         para onde o botão leva: a própria app ou a página dela na loja
+// plataforma  onde ela roda, mostrado no índice da abertura: 'web' ou 'android'
+// loja        opcional: nome da loja quando o url leva a ela, como 'Google Play'.
+//             O link abre em outra aba e ganha o aviso para leitor de tela.
 // cena        desenho da tinta, em js/cenas.js. Sem desenho próprio, use 'rabisco'
 // genero      o que a app é, em poucas palavras
-// linha       uma frase para o cartão da abertura
-// botaoCurto  texto do botão no cartão da abertura
+// linha       uma frase para a ficha da abertura
+// botaoCurto  texto do botão na ficha da abertura
 // resumo      um parágrafo para a seção da app
 // nota        opcional: um aviso curto, como requisitos
 // botao       texto do botão na seção da app
@@ -22,6 +25,7 @@ export const apps = [
     id: 'reino',
     nome: 'Reino de Pedra',
     url: 'https://reino.rascunhos.app',
+    plataforma: 'web',
     cena: 'reino',
     genero: 'MMO de estratégia medieval',
     linha: 'Um mundo persistente, em tempo real, que continua andando com você offline.',
@@ -58,6 +62,7 @@ export const apps = [
     id: 'glowup',
     nome: 'GlowUp',
     url: 'https://glowup.rascunhos.app',
+    plataforma: 'web',
     cena: 'glowup',
     genero: 'Editor de retoque de fotos',
     linha: 'Roda inteiro no navegador. Nada sai do seu aparelho. Nem um pixel.',
@@ -101,6 +106,44 @@ export const apps = [
           largura: 520,
           altura: 1125,
           tipo: 'celular',
+        },
+      ],
+    },
+  },
+  {
+    id: 'gdsb',
+    nome: 'GDSB',
+    url: 'https://play.google.com/store/apps/details?id=gdsb.app',
+    plataforma: 'android',
+    loja: 'Google Play',
+    cena: 'gdsb',
+    genero: 'Gerenciador de senhas offline',
+    linha: 'Suas senhas num cofre cifrado, num arquivo que é seu. Sem conta e sem servidor.',
+    botaoCurto: 'Ver na Google Play',
+    resumo:
+      'O cofre é um arquivo .GDSBX que você escolhe onde guardar, cifrado no próprio aparelho com AES-256-GCM e uma senha mestra. O app não pede internet: não há conta, servidor, anúncio nem rastreamento.',
+    nota: 'Para Android, na Google Play. Ainda em fase de testes e em desenvolvimento ativo.',
+    botao: 'Ver na Google Play',
+    detalhe: {
+      rotulo: 'Como o GDSB guarda',
+      cena: 'gdsb-digital',
+      titulo: 'A chave fica com você',
+      exemplos: [
+        {
+          titulo: 'Um arquivo que é seu',
+          texto: 'Guarde o cofre onde quiser, até numa pasta sincronizada do Drive ou do OneDrive. Ele só abre com a sua senha.',
+        },
+        {
+          titulo: 'Backup a cada gravação',
+          texto: 'Antes de salvar, a versão anterior vai para uma área privada do app. Dá para restaurar num arquivo novo.',
+        },
+        {
+          titulo: 'Digital ou senha mestra',
+          texto: 'A biometria abre o último cofre, se você quiser. A senha mestra sempre funciona.',
+        },
+        {
+          titulo: 'Tranca sozinho',
+          texto: 'Se você quiser, o cofre se fecha quando fica parado, e a senha copiada some da área de transferência.',
         },
       ],
     },
