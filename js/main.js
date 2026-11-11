@@ -390,10 +390,11 @@ const PALETA_IRIS = [
 ];
 function corDaIris(t) {
   const f = t / 4.5;
-  const i = Math.floor(f) % PALETA_IRIS.length;
+  const n = PALETA_IRIS.length;
+  const i = ((Math.floor(f) % n) + n) % n;
   const de = PALETA_IRIS[i];
-  const para = PALETA_IRIS[(i + 1) % PALETA_IRIS.length];
-  const k = Math.max(0, ((f % 1) - 0.72) / 0.28);
+  const para = PALETA_IRIS[(i + 1) % n];
+  const k = Math.max(0, ((f - Math.floor(f)) - 0.72) / 0.28);
   const u = k * k * (3 - 2 * k);
   return de.map((v, c) => v + (para[c] - v) * u);
 }
@@ -586,7 +587,8 @@ function iniciarTinta() {
     const real = (agora - anterior) / 1000;
     anterior = agora;
     if (real > 0.5) return; // voltou de outra aba
-    const dt = Math.min(real, 1 / 30);
+    // O primeiro quadro pode vir com horário anterior ao do início: sem tempo negativo.
+    const dt = Math.max(0, Math.min(real, 1 / 30));
     t += dt;
     escrita = Math.min(2, escrita + dt / 2.2);
 
