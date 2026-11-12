@@ -33,8 +33,8 @@ Uma cena é uma função que recebe a tela dela e devolve `medir()` e `quadro(dt
 devolver também `ponteiro(x, y, dentro)`, para reagir ao mouse, e `parado()`, para o quadro de quem
 pediu movimento reduzido.
 
-As apps não têm fonte nem botão próprios: o índice usa uma letra só, e a cor de cada app aparece
-apenas num ponto ao lado da plataforma e na luz em volta da janela.
+As apps não têm fonte própria: o índice usa uma letra só. O que identifica cada app é a cor dela,
+definida em `cor` e `corTinta`.
 
 ### O índice com muitas apps
 
@@ -53,13 +53,14 @@ acompanha.
 
 A página é preta, com o índice das apps em letras grandes e apagadas.
 
-- **Luz:** o ponteiro é uma luz branca, e os nomes acendem por onde ela passa. Com o mouse parado,
-  ou sem mouse, a luz passeia sozinha pelo índice.
-- **Destaque:** passar o mouse por uma linha acende o nome inteiro, e a janela ao lado troca para a
-  cena viva daquela app, com uma faixa de luz. Dá para mexer na cena.
+- **Luz:** o ponteiro é uma luz, e os nomes acendem por onde ela passa. Com o mouse parado, ou sem
+  mouse, a luz passeia sozinha pelo índice.
+- **Destaque:** passar o mouse por uma linha acende o nome inteiro na cor da app, e a janela ao
+  lado troca para a cena viva daquela app, com uma faixa de luz. Dá para mexer na cena.
 - **Abrir:** clicar na linha abre o resumo, o botão para a app e os exemplos. A linha aberta fica
   no endereço (`#glowup`), então dá para mandar o link dela. `Esc` fecha.
-- **Cor:** só em dois lugares, o ponto ao lado da plataforma e a luz em volta da janela.
+- **Cor:** cada app tem a sua. Ela aparece fraca no nome apagado e cheia no nome aceso, no botão,
+  nos fios dos exemplos e na luz em volta da janela. O fundo continua preto.
 - **Tela estreita:** sobra só o índice, e a cena aparece dentro da linha aberta.
 - **Movimento reduzido:** com `prefers-reduced-motion`, a luz não passeia e cada cena mostra um
   quadro parado.

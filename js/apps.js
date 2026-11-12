@@ -8,7 +8,7 @@
 // loja        opcional: nome da loja quando o url leva a ela, como 'Google Play'.
 //             O link abre em outra aba e ganha o aviso para leitor de tela.
 // cena        cena viva na janela de prévia, em js/cenas/. Sem cena própria, use 'rabisco'
-// cor         cor da app: o ponto no índice e a luz em volta da janela
+// cor         cor da app: o nome no índice, o botão e a luz em volta da janela
 // corTinta    cor do texto sobre a cor da app
 // legenda     opcional: uma frase sob a janela, dizendo o que a cena mostra
 // genero      o que a app é, em poucas palavras

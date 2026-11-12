@@ -33,7 +33,7 @@ function htmlLinha(a, i) {
   const fora = a.loja ? ' target="_blank" rel="noopener"' : '';
   const aviso = a.loja ? `<span class="so-leitor"> (abre a ${a.loja} em outra aba)</span>` : '';
   return `
-    <li class="linha" id="${a.id}" data-i="${i}" style="--i:${i};--cor-app:${a.cor}">
+    <li class="linha" id="${a.id}" data-i="${i}" style="--i:${i};--cor-app:${a.cor};--cor-app-tinta:${a.corTinta}">
       <h2 class="linha-titulo">
         <button type="button" class="linha-cabeca" id="botao-${a.id}" aria-expanded="false" aria-controls="painel-${a.id}">
           <span class="linha-nome"><span>${a.nome}</span></span>

@@ -42,7 +42,7 @@
   --texto-2: rgb(245 244 240 / 0.72);
   --texto-3: rgb(245 244 240 / 0.52);
   --fio: rgb(255 255 255 / 0.13);
-  --luz: #fff; /* a cor da app em destaque: só aparece em volta da janela */
+  --luz: #fff; /* a cor da app em destaque: tinge a luz do ponteiro e a janela */
   --apagado: rgb(255 255 255 / 0.36); /* um nome fora da luz */
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
   --texto: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -114,7 +114,7 @@ button {
 .luz {
   position: absolute;
   inset: 0;
-  background: radial-gradient(520px circle at var(--px, -999px) var(--py, -999px), rgb(255 255 255 / 0.075), transparent 70%);
+  background: radial-gradient(520px circle at var(--px, -999px) var(--py, -999px), color-mix(in srgb, var(--luz) 11%, transparent), transparent 70%);
 }
 
 .topo,
@@ -156,6 +156,7 @@ button {
 .rasura {
   color: var(--texto-3);
   text-decoration: line-through;
+  text-decoration-color: var(--luz);
   text-decoration-thickness: 1.5px;
 }
 @keyframes surgir {
@@ -182,8 +183,11 @@ button {
   border-bottom: 1px solid var(--fio);
   container-type: inline-size; /* o tamanho dos nomes segue a largura do índice */
 }
+/* Cada linha leva a cor da sua app: fraca no nome apagado, cheia no nome aceso. */
 .linha {
+  --apagado: color-mix(in srgb, var(--cor-app) 52%, #1b1c20);
   position: relative;
+  isolation: isolate;
   border-top: 1px solid var(--fio);
   scroll-margin-top: 12px;
   animation: surgir 0.9s ease calc(var(--i) * 80ms + 0.15s) both;
@@ -196,7 +200,7 @@ button {
   left: 0;
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #fff, transparent) no-repeat -60% 0 / 36% 100%;
+  background: linear-gradient(90deg, transparent, var(--cor-app), transparent) no-repeat -60% 0 / 36% 100%;
   opacity: 0;
 }
 .linha.em-foco::before {
@@ -212,9 +216,27 @@ button {
     background-position: 160% 0;
   }
 }
+/* A linha em destaque ganha um banho leve da cor dela. */
+.linha::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 calc(var(--margem) * -1);
+  z-index: -1;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cor-app) 15%, transparent), transparent 78%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.linha.em-foco::after,
+.linha.aberta::after {
+  opacity: 1;
+}
 .linha.em-foco,
 .linha.aberta {
-  --apagado: #fff;
+  --apagado: var(--cor-app);
+}
+.linha-proximo::after {
+  display: none;
 }
 .linha-titulo {
   margin: 0;
@@ -251,7 +273,7 @@ button {
   display: inline-block;
   padding-right: 0.06em;
   color: transparent;
-  background: radial-gradient(circle 300px at var(--lx, -999px) var(--ly, -999px), #fff 0, rgb(255 255 255 / 0.82) 30%, var(--apagado) 100%);
+  background: radial-gradient(circle 300px at var(--lx, -999px) var(--ly, -999px), #fff 0, color-mix(in srgb, var(--cor-app) 72%, #fff) 30%, var(--apagado) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   transition: --apagado 0.5s ease, translate 0.6s var(--curva);
@@ -287,12 +309,20 @@ button {
   align-items: center;
   gap: 7px;
 }
-/* O único ponto de cor da linha. */
 .linha-tipo i {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--cor-app);
+  transition: box-shadow 0.4s;
+}
+.linha.em-foco .linha-tipo,
+.linha.aberta .linha-tipo {
+  color: var(--cor-app);
+}
+.linha.em-foco .linha-tipo i,
+.linha.aberta .linha-tipo i {
+  box-shadow: 0 0 10px var(--cor-app);
 }
 /* O sinal de mais, que vira um xis com a linha aberta. */
 .linha-sinal {
@@ -321,6 +351,7 @@ button {
 .linha.em-foco .linha-sinal,
 .linha.aberta .linha-sinal {
   opacity: 1;
+  color: var(--cor-app);
 }
 .linha.aberta .linha-sinal {
   rotate: 135deg;
@@ -381,8 +412,8 @@ button {
   margin-top: 24px;
   padding: 13px 22px;
   border-radius: 999px;
-  background: var(--texto-1);
-  color: var(--fundo);
+  background: var(--cor-app);
+  color: var(--cor-app-tinta);
   font-weight: 650;
   text-decoration: none;
   transition: box-shadow 0.4s, transform 0.3s var(--curva);
@@ -397,7 +428,7 @@ button {
 }
 .botao:hover {
   transform: translateY(-1px);
-  box-shadow: 0 0 0 5px rgb(255 255 255 / 0.12), 0 10px 50px -6px rgb(255 255 255 / 0.5);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--cor-app) 22%, transparent), 0 10px 50px -6px var(--cor-app);
 }
 .botao:hover svg {
   transform: translateX(5px);
@@ -413,7 +444,7 @@ button {
   font: 500 0.7rem/1.4 var(--mono);
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--texto-3);
+  color: var(--cor-app);
 }
 .exemplos {
   display: grid;
@@ -425,7 +456,7 @@ button {
 }
 .exemplos li {
   padding: 16px 0 18px;
-  border-top: 1px solid var(--fio);
+  border-top: 1px solid color-mix(in srgb, var(--cor-app) 38%, transparent);
 }
 .exemplos h4 {
   margin: 0 0 4px;
@@ -474,7 +505,7 @@ button {
   z-index: -1;
   background: var(--luz);
   filter: blur(110px);
-  opacity: 0.17;
+  opacity: 0.3;
 }
 .janela-palco {
   position: relative;
@@ -514,7 +545,7 @@ button {
   left: 0;
   width: 2px;
   background: #fff;
-  box-shadow: 0 0 26px 5px rgb(255 255 255 / 0.55);
+  box-shadow: 0 0 26px 5px var(--luz);
   opacity: 0;
   pointer-events: none;
 }
@@ -550,7 +581,7 @@ button {
   color: var(--texto-3);
 }
 .janela-link {
-  color: var(--texto-1);
+  color: var(--luz);
   text-decoration: none;
   text-transform: none;
   letter-spacing: 0.02em;
@@ -624,7 +655,7 @@ button {
   width: 2px;
   margin-left: -1px;
   background: #fff;
-  box-shadow: 0 0 16px 2px rgb(255 255 255 / 0.7);
+  box-shadow: 0 0 16px 2px var(--cor-app);
   pointer-events: none;
 }
 .comp-linha::after {
@@ -696,8 +727,8 @@ button {
 }
 .comp-escolha button[aria-pressed="true"] {
   border-color: transparent;
-  background: #f5f4f0;
-  color: #08090b;
+  background: var(--cor-app);
+  color: var(--cor-app-tinta);
 }
 
 /* ---- Cena do Snake VS ------------------------------------------------------------- */
