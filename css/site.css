@@ -200,7 +200,7 @@ a {
 
 /* A marca ocupa um lugar que a tinta desenha. Ela não anda nem desfoca. */
 .js .marca.item,
-.js .cena-alvo.item:not(.com-capturas) {
+.js .cena-alvo.item {
   opacity: 1;
   transform: none;
   filter: none;
@@ -686,33 +686,188 @@ a {
   color: rgb(244 242 230 / 0.84);
 }
 
-/* Capturas de verdade, na frente da luz */
-.com-capturas {
+/* Antes e depois: fotos de verdade, na frente da luz */
+@property --corte {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+/* A caixa fica parada (a tinta mede ela); só o conteúdo aparece com a parada. */
+.js .com-comparacao .cena-alvo > * {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.js .com-comparacao.ativa .cena-alvo > * {
+  opacity: 1;
+  transition: opacity 0.7s var(--curva) 0.5s;
+}
+.com-comparacao .cena-alvo {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.captura {
-  display: block;
-  height: auto;
-  border-radius: 10px;
-  border: 1px solid rgb(255 255 255 / 0.14);
+.comparacao {
+  height: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.comparador {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  max-width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  overflow: hidden;
   background: #0b0b0c;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  touch-action: pan-y;
 }
-.captura-tela {
-  width: 88%;
-  max-height: 86%;
-  object-fit: contain;
-  margin-right: 10%;
-}
-.captura-celular {
+.comp-pessoa {
   position: absolute;
-  right: 0;
-  bottom: 4%;
-  height: 74%;
-  width: auto;
-  border-radius: 14px;
-  box-shadow: 0 16px 44px rgb(0 0 0 / 0.65);
+  inset: 0;
+  visibility: hidden;
+}
+.comp-pessoa.ativa {
+  visibility: visible;
+}
+.comp-pessoa img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.comp-depois {
+  opacity: 0;
+  transition: opacity 0.45s var(--curva);
+}
+.comp-depois.ativa {
+  opacity: 1;
+}
+.comp-antes {
+  clip-path: inset(0 calc(100% - var(--corte)) 0 0);
+}
+.comp-linha {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--corte);
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow: 0 0 12px rgb(255 184 119 / 0.9);
+  pointer-events: none;
+}
+.comp-linha::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  background: rgb(10 11 9 / 0.7);
+  border: 2px solid #fff;
+}
+/* A cortina atravessa a foto uma vez ao chegar, como no próprio app. */
+.parada.ativa .comparador:not(.mexeu) {
+  animation: cortina 1.6s var(--curva) 0.7s backwards;
+}
+@keyframes cortina {
+  from {
+    --corte: 100%;
+  }
+}
+.comp-controle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+.comparador:has(.comp-controle:focus-visible) {
+  outline: 2px solid var(--cor-app);
+  outline-offset: 3px;
+}
+.comp-rotulo {
+  position: absolute;
+  top: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 12px;
+  background: rgb(10 11 9 / 0.62);
+  color: var(--giz);
+  pointer-events: none;
+}
+.comp-rotulo-antes {
+  left: 10px;
+}
+/* Foto estreita: um rótulo em cima e outro embaixo, para não se sobreporem. */
+.comparador {
+  container-type: inline-size;
+}
+@container (max-width: 260px) {
+  .comp-rotulo {
+    font-size: 11px;
+    padding: 2px 7px;
+  }
+  .comp-rotulo-antes {
+    top: auto;
+    bottom: 10px;
+  }
+}
+.comp-rotulo-depois {
+  right: 10px;
+  color: var(--cor-app);
+}
+.comp-escolha {
+  display: flex;
+  flex: none;
+  gap: 4px;
+  padding: 4px;
+  max-width: calc(100% - 16px);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: 999px;
+  background: rgb(10 11 9 / 0.72);
+}
+.comp-pessoas {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.comp-escolha button {
+  flex: none;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  font: 500 13px/1 var(--texto);
+  color: var(--giz);
+  background: none;
+  cursor: pointer;
+}
+.comp-escolha button[aria-pressed="true"] {
+  background: var(--cor-app);
+  color: var(--cor-app-tinta);
+}
+.comp-legenda {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--giz-2);
+  text-align: center;
 }
 
 /* ---- Próximo rascunho ---- */
@@ -1078,15 +1233,17 @@ html:not(.js) :is(.palco, .fichas, .indice, .dica-tinta, #menu) {
     font-size: 13.5px;
     line-height: 1.3;
   }
-  .captura-tela {
-    width: auto;
-    max-width: 82%;
-    max-height: 92%;
-    margin-right: 16%;
+  /* No celular, a comparação ganha o espaço maior e os exemplos ficam só com o título. */
+  .com-comparacao .painel {
+    grid-template-rows: minmax(240px, 1fr) auto;
   }
-  .captura-celular {
-    height: 100%;
-    bottom: 0;
+  .com-comparacao .exemplos p {
+    display: none;
+  }
+  .comp-escolha button {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 }
 

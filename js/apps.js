@@ -19,7 +19,11 @@
 //   cena      desenho da tinta nessa parada
 //   titulo    título da parada
 //   exemplos  lista de { titulo, texto }
-//   capturas  opcional: lista de { src, alt, largura, altura, tipo: 'tela' | 'celular' }
+//   comparacao  opcional: antes e depois com uma barra que se arrasta
+//     legenda   uma frase sobre a origem das fotos
+//     largura, altura  tamanho das imagens (todas iguais)
+//     pessoas   lista de { nome, original: { src, alt }, versoes: [{ nome, src, alt }] }.
+//               Com mais de uma pessoa, aparecem botões para trocar.
 export const apps = [
   {
     id: 'reino',
@@ -92,22 +96,37 @@ export const apps = [
           texto: 'Um detector no navegador acha rosto, olhos, boca e fios. Nunca diz quem é a pessoa.',
         },
       ],
-      capturas: [
-        {
-          src: 'assets/capturas/glowup-inicial.webp',
-          alt: 'Tela inicial do GlowUp no computador: "Nada sai do seu aparelho. Nem um pixel.", com o botão para escolher a foto.',
-          largura: 1280,
-          altura: 720,
-          tipo: 'tela',
-        },
-        {
-          src: 'assets/capturas/glowup-celular-inicial.webp',
-          alt: 'Tela inicial do GlowUp no celular, com os botões para escolher ou tirar uma foto.',
-          largura: 520,
-          altura: 1125,
-          tipo: 'celular',
-        },
-      ],
+      comparacao: {
+        legenda: 'Rosto gerado por IA. Retoque e filtros feitos no GlowUp.',
+        largura: 800,
+        altura: 1000,
+        pessoas: [
+          {
+            nome: 'Ela',
+            original: {
+              src: 'assets/capturas/glowup-ela-original.webp',
+              alt: 'Retrato original de uma mulher de cabelo escuro, com pontinhos vermelhos no queixo.',
+            },
+            versoes: [
+              {
+                nome: 'Retoque',
+                src: 'assets/capturas/glowup-ela-retoque.webp',
+                alt: 'A mesma foto com retoque: os pontinhos do queixo somem e a pele fica uniforme.',
+              },
+              {
+                nome: 'Noite de festa',
+                src: 'assets/capturas/glowup-ela-noite-de-festa.webp',
+                alt: 'A mesma foto com o filtro Noite de festa: fundo escuro, contraste alto e tom quente.',
+              },
+              {
+                nome: 'Neon',
+                src: 'assets/capturas/glowup-ela-neon.webp',
+                alt: 'A mesma foto com o filtro Neon: luz em azul-petróleo e lilás.',
+              },
+            ],
+          },
+        ],
+      },
     },
   },
   {

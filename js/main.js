@@ -55,15 +55,48 @@ document.getElementById('fichas').innerHTML = apps
   )
   .join('');
 
+/** Antes e depois: a original à esquerda da barra, a versão escolhida à direita. */
+function htmlComparacao(c) {
+  const img = (f, classe) => `<img class="${classe}" data-src="${f.src}" alt="${f.alt}" width="${c.largura}" height="${c.altura}">`;
+  const pessoas = c.pessoas
+    .map(
+      (p, k) => `
+      <div class="comp-pessoa${k === 0 ? ' ativa' : ''}" data-pessoa="${k}">
+        ${p.versoes.map((v, j) => img(v, `comp-depois${j === 0 ? ' ativa' : ''}`)).join('')}
+        ${img(p.original, 'comp-antes')}
+      </div>`,
+    )
+    .join('');
+  const trocaPessoa =
+    c.pessoas.length > 1
+      ? `<div class="comp-escolha comp-pessoas" role="group" aria-label="Exemplo">${c.pessoas
+          .map((p, k) => `<button type="button" data-pessoa="${k}" aria-pressed="${k === 0}">${p.nome}</button>`)
+          .join('')}</div>`
+      : '';
+  const versoes = (k) =>
+    c.pessoas[k].versoes.map((v, j) => `<button type="button" data-versao="${j}" aria-pressed="${j === 0}">${v.nome}</button>`).join('');
+  return `
+    <div class="comparacao">
+      <div class="comparador" style="--corte: 50%">
+        ${pessoas}
+        <span class="comp-rotulo comp-rotulo-antes" aria-hidden="true">Original</span>
+        <span class="comp-rotulo comp-rotulo-depois" aria-hidden="true">${c.pessoas[0].versoes[0].nome}</span>
+        <span class="comp-linha" aria-hidden="true"></span>
+        <input class="comp-controle" type="range" min="0" max="100" value="50" aria-label="Arraste para comparar a original com a editada">
+        ${trocaPessoa}
+      </div>
+      <div class="comp-escolha comp-versoes" role="group" aria-label="Versão editada">${versoes(0)}</div>
+      <p class="comp-legenda">${c.legenda}</p>
+    </div>`;
+}
+
 function htmlDetalhe(a) {
   const d = a.detalhe;
-  const capturas = (d.capturas || [])
-    .map((c) => `<img class="captura captura-${c.tipo}" data-src="${c.src}" alt="${c.alt}" width="${c.largura}" height="${c.altura}">`)
-    .join('');
+  const comparacao = d.comparacao ? htmlComparacao(d.comparacao) : '';
   return `
-    <section id="${a.id}-exemplos" class="parada parada-detalhe app-${a.id}" data-cena="${d.cena}" data-app="${a.id}" data-rotulo="${d.rotulo}">
+    <section id="${a.id}-exemplos" class="parada parada-detalhe app-${a.id}${comparacao ? ' com-comparacao' : ''}" data-cena="${d.cena}" data-app="${a.id}" data-rotulo="${d.rotulo}">
       <div class="painel" tabindex="-1">
-        <div class="cena-alvo item ${capturas ? 'com-capturas' : ''}">${capturas}</div>
+        <div class="cena-alvo item">${comparacao}</div>
         <div class="detalhe-corpo">
           <p class="app-genero item">${a.nome}</p>
           <h2 class="detalhe-titulo item">${d.titulo}</h2>
@@ -103,6 +136,42 @@ document.getElementById('paradas-apps').innerHTML = apps
     .getElementById('marca')
     .insertAdjacentHTML('beforeend', `<svg class="marca-svg" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" aria-hidden="true"><path d="${d}"/></svg>`);
 }
+
+// Comparadores: a barra, as versões e as pessoas
+document.querySelectorAll('.comparacao').forEach((caixa) => {
+  const c = caixa.querySelector('.comparador');
+  const controle = c.querySelector('.comp-controle');
+  const rotulo = c.querySelector('.comp-rotulo-depois');
+  const pessoas = [...c.querySelectorAll('.comp-pessoa')];
+  const dados = apps.find((a) => c.closest(`.app-${a.id}`))?.detalhe.comparacao;
+  let pessoa = 0;
+
+  controle.addEventListener('input', () => {
+    c.classList.add('mexeu');
+    c.style.setProperty('--corte', `${controle.value}%`);
+  });
+
+  function versao(j) {
+    pessoas[pessoa].querySelectorAll('.comp-depois').forEach((img, i) => img.classList.toggle('ativa', i === j));
+    caixa.querySelectorAll('[data-versao]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.versao === j));
+    rotulo.textContent = dados.pessoas[pessoa].versoes[j].nome;
+  }
+  caixa.querySelector('.comp-versoes').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-versao]');
+    if (b) versao(+b.dataset.versao);
+  });
+  c.querySelector('.comp-pessoas')?.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pessoa]');
+    if (!b) return;
+    pessoa = +b.dataset.pessoa;
+    pessoas.forEach((p, k) => p.classList.toggle('ativa', k === pessoa));
+    c.querySelectorAll('[data-pessoa]').forEach((x) => x.tagName === 'BUTTON' && x.setAttribute('aria-pressed', +x.dataset.pessoa === pessoa));
+    caixa.querySelector('.comp-versoes').innerHTML = dados.pessoas[pessoa].versoes
+      .map((v, j) => `<button type="button" data-versao="${j}" aria-pressed="${j === 0}">${v.nome}</button>`)
+      .join('');
+    versao(0);
+  });
+});
 
 // Atraso de entrada de cada item do painel
 document.querySelectorAll('.painel').forEach((p) => {
