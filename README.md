@@ -19,68 +19,59 @@ Depois abra `http://localhost:8732`.
 ## Como adicionar uma app
 
 1. Acrescente um objeto em [`js/apps.js`](js/apps.js). O comentário no topo do arquivo explica cada
-   campo. A linha no índice da abertura, a ficha, o menu e as paradas saem daí. Descreva só o que
+   campo. A linha no índice, o conteúdo da linha aberta e a janela saem daí. Descreva só o que
    existe de verdade, sem números que mudam com o tempo.
-   - App na web: `url` é o endereço dela e `plataforma: 'web'`.
+   - App na web: `url` é o endereço dela e `plataforma: 'web'`. O endereço aparece sob a janela.
    - App de loja: `url` é a página dela na loja, `plataforma: 'android'` e `loja: 'Google Play'`.
      O link abre em outra aba. Use um botão de texto próprio, como "Ver na Google Play", e não
      imite o selo da loja.
-2. Dê uma identidade à app em [`css/site.css`](css/site.css), copiando o bloco `.app-gdsb`: cor,
-   fonte do nome e formato do botão. Se o nome tiver um jeito próprio no índice (caixa alta,
-   itálico), acrescente uma regra `.app-<id> .indice-nome`. Sem nada disso, ela usa as cores do
-   site.
-3. Opcional: desenhe a cena dela em [`js/cenas.js`](js/cenas.js) e registre no objeto `CENA`. Sem
-   desenho próprio, use `cena: 'rabisco'`. A mesma cena aparece no palco da abertura e na parada da
-   app.
-4. Opcional: no `<noscript>` do [`index.html`](index.html), acrescente o link da app.
+2. Opcional: escreva a cena viva dela em [`js/cenas/`](js/cenas/) e registre no objeto `CENAS` de
+   [`js/main.js`](js/main.js). Sem cena própria, use `cena: 'rabisco'`.
+3. Opcional: no `<noscript>` do [`index.html`](index.html), acrescente o link da app.
 
-Cada desenho recebe a caixa do elemento `.cena-alvo`, então ele já se ajusta ao computador e ao
-celular.
+Uma cena é uma função que recebe a tela dela e devolve `medir()` e `quadro(dt, t)`. Ela pode
+devolver também `ponteiro(x, y, dentro)`, para reagir ao mouse, e `parado()`, para o quadro de quem
+pediu movimento reduzido.
 
-### A abertura com muitas apps
+As apps não têm fonte nem botão próprios: o índice usa uma letra só, e a cor de cada app aparece
+apenas num ponto ao lado da plataforma e na luz em volta da janela.
 
-A abertura não cresce com a lista. Ela tem a palavra, a ficha da app em destaque, o índice e o
-palco, onde a tinta desenha a app em destaque.
+### O índice com muitas apps
 
-- **Computador:** uma linha por app no índice. Passar o mouse destaca a app, e clicar abre a parada
-  dela. Com mais de quatro apps, o índice vira duas colunas, e o menu do topo mostra só o ponto de
-  cada app e o nome da atual.
-- **Celular:** o índice vira uma fileira que rola para o lado, no lugar do menu de baixo. O primeiro
-  toque destaca a app e o segundo abre a parada. Deslizar o palco para o lado também troca.
-- **Sozinha,** a abertura passa de uma app para a outra até a pessoa escolher uma. Com o ponteiro
-  no palco ou na ficha, ela espera. Com movimento reduzido, ela não gira.
+Cada app é uma linha, e a última, só com o contorno das letras, é o próximo rascunho. O tamanho dos
+nomes segue a largura do índice. Com mais linhas do que cabem na tela, a página rola e a janela
+acompanha.
 
 ## Como funciona
 
 | Arquivo | O que faz |
 | --- | --- |
 | `js/apps.js` | a lista de apps |
-| `js/main.js` | monta a página e troca de parada |
-| `js/cenas.js` | os desenhos: onde cada partícula quer pousar |
-| `js/tinta.js` | o motor em WebGL2: física das partículas, rastro, brilho e papel |
-| `css/site.css` | layout e identidade de cada app |
+| `js/main.js` | monta o índice, cuida do destaque e de abrir as linhas, e roda o laço de animação |
+| `js/cenas/` | a cena viva de cada app |
+| `css/site.css` | o índice, a janela e a luz |
 
-A página não rola. Ela é uma sequência de paradas, e um gesto (roda, deslizar ou teclado) leva à
-parada seguinte. A troca corre no relógio, não na rolagem, para a tinta e os textos andarem juntos.
-Um painel só rola por dentro quando o conteúdo não cabe na tela.
+A página é preta, com o índice das apps em letras grandes e apagadas.
 
-Na abertura, a tinta tem uma camada por app: a palavra e a cena da app no palco. A palavra usa as
-mesmas partículas, nos mesmos lugares, em todas as camadas. Por isso, quando a app em destaque
-troca, só o palco se refaz.
-
-- **Movimento reduzido:** com `prefers-reduced-motion`, cada parada mostra um desenho parado.
-- **Sem WebGL2:** a palavra vira um SVG, o palco mostra a cor da app em destaque, e o resto da
-  página continua igual.
+- **Luz:** o ponteiro é uma luz branca, e os nomes acendem por onde ela passa. Com o mouse parado,
+  ou sem mouse, a luz passeia sozinha pelo índice.
+- **Destaque:** passar o mouse por uma linha acende o nome inteiro, e a janela ao lado troca para a
+  cena viva daquela app, com uma faixa de luz. Dá para mexer na cena.
+- **Abrir:** clicar na linha abre o resumo, o botão para a app e os exemplos. A linha aberta fica
+  no endereço (`#glowup`), então dá para mandar o link dela. `Esc` fecha.
+- **Cor:** só em dois lugares, o ponto ao lado da plataforma e a luz em volta da janela.
+- **Tela estreita:** sobra só o índice, e a cena aparece dentro da linha aberta.
+- **Movimento reduzido:** com `prefers-reduced-motion`, a luz não passeia e cada cena mostra um
+  quadro parado.
 - **Sem JavaScript:** sobram os links para as apps.
-- **Aparelho fraco:** o motor reduz o número de partículas sozinho quando os quadros atrasam.
 
 ## Anúncios
 
-Ainda não há anúncios. O lugar reservado para eles é a parada final, marcada com um comentário no
+Ainda não há anúncios. O lugar reservado para eles é depois do índice, marcado com um comentário no
 `index.html`, para nunca ficarem por cima das apps.
 
 ## Licenças
 
-Fontes Instrument Sans, Instrument Serif, Cinzel e Silkscreen sob SIL Open Font License, com as
-licenças em [`assets/fonts/`](assets/fonts/). As fotos do GlowUp mostram um rosto gerado por IA, editado
-no próprio GlowUp.
+Fontes Instrument Sans, Instrument Serif e Silkscreen sob SIL Open Font License, com as licenças em
+[`assets/fonts/`](assets/fonts/). As fotos do GlowUp mostram um rosto gerado por IA, editado no
+próprio GlowUp.

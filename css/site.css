@@ -17,31 +17,40 @@
   font-weight: 400;
   font-display: swap;
 }
-@font-face {
-  font-family: Cinzel;
-  src: url("../assets/fonts/cinzel-latin-700-normal.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
+
+/* Cores e ângulo registrados, para poderem mudar aos poucos. */
+@property --luz {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #fff;
+}
+@property --apagado {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: rgb(255 255 255 / 0.36);
+}
+@property --giro {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
 :root {
   color-scheme: dark;
-  --fundo: #0a0b09;
-  --giz: #f4f2e6;
-  --giz-2: rgb(244 242 230 / 0.74);
-  --fluo: #d7ff3e;
-  --fluo-tinta: #151a02;
+  --fundo: #08090b;
+  --texto-1: #f5f4f0;
+  --texto-2: rgb(245 244 240 / 0.72);
+  --texto-3: rgb(245 244 240 / 0.52);
+  --fio: rgb(255 255 255 / 0.13);
+  --luz: #fff; /* a cor da app em destaque: só aparece em volta da janela */
+  --apagado: rgb(255 255 255 / 0.36); /* um nome fora da luz */
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
   --texto: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --curva: cubic-bezier(0.16, 1, 0.3, 1);
-  --margem: clamp(16px, 4vw, 56px);
-  --dir: 1;
-  --topo-altura: 76px;
-  --base-altura: 58px; /* espaço do botão "próximo" */
-  --cor-app: var(--fluo);
-  --cor-app-tinta: var(--fluo-tinta);
-  --raio-app: 8px;
-  --fonte-nome: var(--texto);
+  --margem: clamp(20px, 4.4vw, 64px);
+  --cor-app: #fff;
+  --cor-app-tinta: #08090b;
+  transition: --luz 0.9s ease;
 }
 
 *,
@@ -58,103 +67,23 @@ html {
 body {
   margin: 0;
   font-family: var(--texto);
-  color: var(--giz);
   font-size: 17px;
-  line-height: 1.45;
+  line-height: 1.5;
+  color: var(--texto-1);
 }
 
 a {
   color: inherit;
 }
+button {
+  font: inherit;
+  color: inherit;
+}
 
 :focus-visible {
-  outline: 2px solid var(--cor-app);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-.painel:focus {
-  outline: none;
-}
-
-/* Identidade de cada app: as variáveis valem para cartão, menu e seção. */
-.app-reino {
-  --cor-app: #ee9149;
-  --cor-app-tinta: #1b0e04;
-  --raio-app: 6px;
-  --fonte-nome: Cinzel, "Trajan Pro", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
-}
-.app-glowup {
-  --cor-app: #ffb877;
-  --cor-app-tinta: #1a0f05;
-  --raio-app: 999px;
-  --fonte-nome: "Instrument Serif", Georgia, serif;
-}
-.app-reino .app-nome {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.app-reino .app-botao {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.88em;
-}
-.app-glowup {
-  --escala-nome: 1.28;
-}
-.app-glowup .app-nome {
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.015em;
-}
-.app-glowup .app-botao {
-  background: #f4f1ec;
-  color: #0b0b0c;
-}
-/* GDSB: o rosa e o anil do ícone, o nome em letra de máquina e um botão com cara de chave. */
-.app-gdsb {
-  --cor-app: #f27beb;
-  --cor-app-tinta: #060b24;
-  --raio-app: 12px;
-  --fonte-nome: var(--mono);
-  --escala-nome: 0.86;
-}
-.app-gdsb .app-nome {
-  font-weight: 700;
-  letter-spacing: 0.18em;
-}
-.app-gdsb .app-botao {
-  background: linear-gradient(120deg, #d936d3, #f27beb);
-  color: #060b24;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
-}
-.app-gdsb .detalhe-titulo {
-  font-family: var(--texto);
-  letter-spacing: -0.01em;
-}
-/* Snake VS: o verde da cobra, a letra de pixel do jogo e o botão verde de ação principal. */
-.app-snakevs {
-  --cor-app: #6cf08a;
-  --cor-app-tinta: #0b2615;
-  --raio-app: 10px;
-  --fonte-nome: Silkscreen, var(--mono);
-  --escala-nome: 0.84;
-}
-.app-snakevs .app-nome {
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-.app-snakevs .app-botao {
-  background: #2ecc71;
-  color: #0b2615;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  box-shadow: 0 4px 0 #1e9e55;
-}
-.app-snakevs .detalhe-titulo {
-  font-family: var(--texto);
-  letter-spacing: -0.01em;
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+  border-radius: 6px;
 }
 
 .so-leitor {
@@ -166,620 +95,520 @@ a {
   white-space: nowrap;
 }
 
-/* ---- O palco: uma tela por vez, sem rolagem da página ---- */
-.js,
-.js body {
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
-}
-
-#tinta {
+/* ---- O fundo: preto, com um grão fino e a luz do ponteiro -------------------------- */
+.fundo {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
   z-index: 0;
-}
-
-.js .painel {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  overflow: hidden auto;
-  overscroll-behavior: contain;
-  scrollbar-width: thin;
-  visibility: hidden;
   pointer-events: none;
+  background: var(--fundo);
 }
-.js .parada.ativa .painel {
-  visibility: visible;
-  pointer-events: auto;
+.fundo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
-.js .parada.saindo .painel {
-  visibility: visible;
-}
-
-/* Tudo que entra e sai anda junto com a troca da tinta. */
-.js .item {
-  opacity: 0;
-  transform: translateY(calc(var(--dir) * 22px));
-  filter: blur(6px);
-}
-.js .parada.saindo .item {
-  opacity: 0;
-  transform: translateY(calc(var(--dir) * -22px));
-  filter: blur(4px);
-  transition: opacity 0.34s ease, transform 0.4s ease, filter 0.34s ease;
-}
-.js .parada.ativa .item {
-  opacity: 1;
-  transform: none;
-  filter: none;
-  transition:
-    opacity 0.7s var(--curva),
-    transform 0.9s var(--curva),
-    filter 0.7s var(--curva);
-  transition-delay: calc(0.5s + var(--i, 0) * 70ms);
-}
-.js.primeira-vez .parada.ativa .item {
-  animation: revelar 0.9s var(--curva) calc(1.1s + var(--i, 0) * 110ms) backwards;
-  transition: none;
+.luz {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(520px circle at var(--px, -999px) var(--py, -999px), rgb(255 255 255 / 0.075), transparent 70%);
 }
 
-/* A marca ocupa um lugar que a tinta desenha. Ela não anda nem desfoca. */
-.js .marca.item,
-.js .cena-alvo.item {
-  opacity: 1;
-  transform: none;
-  filter: none;
-  animation: none !important;
-  transition: none !important;
+.topo,
+.pagina {
+  position: relative;
+  z-index: 1;
 }
 
-/* ---- Topo e menu ---- */
+/* ---- Topo ------------------------------------------------------------------------- */
 .topo {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 3;
-  height: var(--topo-altura);
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 var(--margem);
-  pointer-events: none;
+  padding: 22px var(--margem) 0;
+  animation: surgir 1s ease 0.2s both;
 }
-.topo a {
-  pointer-events: auto;
+.marca {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.marca a {
   text-decoration: none;
 }
-.topo-marca {
-  font-family: var(--mono);
-  font-size: 15px;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  transition: opacity 0.4s;
+.marca span {
+  color: var(--texto-3);
 }
-.topo-marca span {
-  color: var(--fluo);
-}
-.em-abertura .topo-marca {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#menu {
-  display: flex;
-  gap: 10px;
-  margin-left: auto;
-  pointer-events: auto;
-}
-#menu a {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 0 20px;
-  font-size: 16px;
-  font-weight: 600;
-  white-space: nowrap;
-  border: 1px solid rgb(244 242 230 / 0.26);
-  border-radius: 999px;
-  background: rgb(10 11 9 / 0.6);
-  transition: background 0.25s, color 0.25s, border-color 0.25s, transform 0.2s var(--curva);
-}
-#menu a i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--cor-app);
-  box-shadow: 0 0 10px var(--cor-app);
-}
-#menu a:hover {
-  border-color: var(--cor-app);
-  transform: translateY(-1px);
-}
-#menu a[aria-current] {
-  background: var(--cor-app);
-  border-color: var(--cor-app);
-  color: var(--cor-app-tinta);
-}
-#menu a[aria-current] i {
-  background: currentColor;
-  box-shadow: none;
-}
-.menu-inicio {
-  display: none !important;
-}
-.js #menu {
-  transition: opacity 0.4s, visibility 0s;
-}
-.em-abertura #menu {
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s, visibility 0s 0.3s;
-}
-/* Muitas apps: fora a atual, cada uma vira só o ponto. O nome continua para o leitor. */
-@media (min-aspect-ratio: 1/1) {
-  .menu-compacto a:not([aria-current]) {
-    padding: 0 17px;
-  }
-  .menu-compacto a:not([aria-current]) .menu-nome {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
-/* ---- Abertura ---- */
-/* A palavra em cima, a ficha da app em destaque e o índice à esquerda; à direita, o palco
-   onde a tinta desenha a app em destaque. Mais apps só alongam o índice. */
-.js #abertura .painel,
-#abertura .painel {
-  display: grid;
-  grid-template-columns: minmax(360px, 5fr) minmax(0, 7fr);
-  grid-template-rows: clamp(96px, 19vh, 180px) auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    "marca palco"
-    "versao palco"
-    "ficha palco"
-    "indice palco";
-  column-gap: clamp(24px, 3.4vw, 56px);
-  row-gap: 8px;
-  padding: 26px var(--margem) calc(var(--base-altura) + 6px);
-}
-
-.marca {
-  grid-area: marca;
-  margin: 0;
-  position: relative;
-  min-height: 0;
-  font-weight: 400;
-}
-/* O nome é desenhado pela tinta. O texto fica para leitor de tela e para quem está sem JS. */
-.js .marca-texto {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-.marca-texto {
-  font-size: clamp(56px, 14vw, 180px);
-  letter-spacing: -0.04em;
-}
-.marca-svg {
-  display: none;
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.marca-svg path {
-  fill: none;
-  stroke: var(--giz);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.sem-webgl .marca-svg {
-  display: block;
-}
-.sem-webgl #tinta {
-  display: none;
-}
-
 .versao {
-  grid-area: versao;
   margin: 0;
-  font-family: var(--mono);
-  font-size: 13px;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 2px 14px;
-  color: var(--giz-2);
+  gap: 12px;
+  font: 500 0.68rem/1 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--texto-2);
 }
 .rasura {
-  position: relative;
-  opacity: 0.72;
+  color: var(--texto-3);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
 }
-.rasura::after {
-  content: "";
-  position: absolute;
-  left: -4px;
-  right: -4px;
-  top: 52%;
-  height: 2px;
-  background: var(--fluo);
-  transform: rotate(-3deg);
-  border-radius: 2px;
-}
-.dica-tinta {
-  color: var(--fluo);
-}
-@media (hover: none) {
-  .com-mouse {
-    display: none;
+@keyframes surgir {
+  from {
+    opacity: 0;
   }
 }
 
-.palco {
-  grid-area: palco;
-}
-/* Sem WebGL, o palco guarda ao menos a cor da app em destaque. */
-.sem-webgl .palco::before {
-  content: "";
-  position: absolute;
-  inset: 8%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--cor-app) 26%, transparent), transparent);
-  transition: background 0.6s;
+/* ---- A página: o índice à esquerda, a janela à direita ---------------------------- */
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 92px);
+  align-items: start;
+  max-width: 1640px;
+  margin-inline: auto;
+  padding: clamp(18px, 3.4vh, 40px) var(--margem) 72px;
 }
 
-/* As fichas ficam empilhadas na mesma célula: a mais alta dita a altura, e trocar de app não
-   mexe no resto da página nem no palco. */
-.fichas {
-  grid-area: ficha;
-  display: grid;
-  align-self: center;
-  min-height: 0;
+.indice {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--fio);
+  container-type: inline-size; /* o tamanho dos nomes segue a largura do índice */
 }
-.ficha {
-  grid-area: 1 / 1;
-  align-self: center;
-  visibility: hidden;
+.linha {
+  position: relative;
+  border-top: 1px solid var(--fio);
+  scroll-margin-top: 12px;
+  animation: surgir 0.9s ease calc(var(--i) * 80ms + 0.15s) both;
+}
+/* Um feixe corre pelo fio de cima quando a linha entra em destaque. */
+.linha::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #fff, transparent) no-repeat -60% 0 / 36% 100%;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.3s, transform 0.4s var(--curva), visibility 0s 0.3s;
 }
-.ficha.ativa {
-  visibility: visible;
-  opacity: 1;
-  transform: none;
-  transition: opacity 0.55s 0.12s, transform 0.8s var(--curva) 0.12s, visibility 0s;
+.linha.em-foco::before {
+  animation: feixe 1.3s var(--curva);
 }
-.ficha .app-nome {
-  font-size: calc(clamp(36px, 4.4vw, 68px) * var(--escala-nome, 1));
-  margin-bottom: 10px;
+@keyframes feixe {
+  0% {
+    opacity: 1;
+    background-position: -60% 0;
+  }
+  100% {
+    opacity: 0;
+    background-position: 160% 0;
+  }
 }
-.ficha-linha {
-  margin: 0 0 18px;
-  max-width: 36ch;
-  font-size: clamp(16px, 1.3vw, 19px);
-  line-height: 1.38;
-  color: rgb(244 242 230 / 0.88);
+.linha.em-foco,
+.linha.aberta {
+  --apagado: #fff;
 }
-.ficha-acoes {
+.linha-titulo {
+  margin: 0;
+  font: inherit;
+}
+.linha-cabeca {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 20px;
+  width: 100%;
+  padding: clamp(8px, 1.5vh, 16px) 0 clamp(10px, 1.8vh, 18px);
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.linha-cabeca:focus-visible {
+  outline-offset: -2px;
+}
+/* O nome: enorme, apagado, e aceso só onde a luz bate. */
+.linha-nome {
+  grid-column: 1;
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  font-size: min(11.4cqw, 10.4vh);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+.linha-nome > span {
+  display: inline-block;
+  padding-right: 0.06em;
+  color: transparent;
+  background: radial-gradient(circle 300px at var(--lx, -999px) var(--ly, -999px), #fff 0, rgb(255 255 255 / 0.82) 30%, var(--apagado) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: --apagado 0.5s ease, translate 0.6s var(--curva);
+  animation: subir 1.1s var(--curva) calc(var(--i) * 80ms + 0.15s) both;
+}
+@keyframes subir {
+  from {
+    transform: translateY(105%);
+  }
+}
+.linha.em-foco .linha-nome > span,
+.linha.aberta .linha-nome > span {
+  translate: 0.1em 0;
+}
+.linha-meta {
+  grid-column: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 20px;
+  gap: 4px 18px;
+  font: 500 0.7rem/1.4 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--texto-3);
+  transition: color 0.4s;
 }
-.ficha-mais {
+.linha.em-foco .linha-meta,
+.linha.aberta .linha-meta {
+  color: var(--texto-1);
+}
+.linha-tipo {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--cor-app);
-  text-underline-offset: 4px;
+  gap: 7px;
 }
-
-/* O índice: uma linha por app. Passar o mouse destaca, clicar entra. */
-.indice {
-  grid-area: indice;
-  position: relative;
-  min-width: 0;
-}
-.indice ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  border-top: 1px solid rgb(244 242 230 / 0.14);
-}
-.indice-longo ul {
-  grid-template-columns: 1fr 1fr;
-  column-gap: 20px;
-}
-.indice-app {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 46px;
-  padding: 0 12px 0 10px;
-  text-decoration: none;
-  color: var(--giz-2);
-  border-bottom: 1px solid rgb(244 242 230 / 0.12);
-  transition: color 0.25s, background 0.25s;
-}
-.indice-app i {
-  flex: none;
-  width: 8px;
-  height: 8px;
+/* O único ponto de cor da linha. */
+.linha-tipo i {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--cor-app);
-  opacity: 0.55;
-  transition: opacity 0.25s, box-shadow 0.25s;
 }
-.indice-nome {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: var(--fonte-nome);
-  font-size: calc(19px * var(--escala-nome, 1));
-  font-weight: 600;
+/* O sinal de mais, que vira um xis com a linha aberta. */
+.linha-sinal {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  position: relative;
+  width: 26px;
+  height: 26px;
+  opacity: 0.45;
+  transition: rotate 0.6s var(--curva), opacity 0.4s;
 }
-.app-reino .indice-nome {
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.app-glowup .indice-nome {
-  font-style: italic;
-  font-weight: 400;
-}
-.app-gdsb .indice-nome {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-}
-.app-snakevs .indice-nome {
-  font-size: 16px;
-  font-weight: 400;
-  text-transform: uppercase;
-}
-.indice-plataforma {
-  flex: none;
-  font-family: var(--mono);
-  font-size: 12px;
-  line-height: 1;
-  padding: 4px 8px;
-  border: 1px solid rgb(244 242 230 / 0.22);
-  border-radius: 999px;
-}
-.indice-app:hover,
-.indice-app.em-foco {
-  color: var(--giz);
-}
-.indice-app.em-foco {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--cor-app) 15%, transparent), transparent 85%);
-}
-.indice-app.em-foco i {
-  opacity: 1;
-  box-shadow: 0 0 10px var(--cor-app);
-}
-.indice-app.em-foco .indice-nome {
-  color: var(--cor-app);
-}
-/* A barrinha do tempo até a próxima app, quando a abertura gira sozinha */
-.indice-app::after {
+.linha-sinal::before,
+.linha-sinal::after {
   content: "";
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--cor-app);
-  transform: scaleX(0);
-  transform-origin: left;
+  top: 50%;
+  width: 100%;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: currentColor;
 }
-.indice.girando .em-foco::after {
-  animation: giro var(--giro, 6s) linear forwards;
+.linha-sinal::after {
+  rotate: 90deg;
 }
-@keyframes giro {
-  to {
-    transform: scaleX(1);
-  }
+.linha.em-foco .linha-sinal,
+.linha.aberta .linha-sinal {
+  opacity: 1;
+}
+.linha.aberta .linha-sinal {
+  rotate: 135deg;
 }
 
-/* ---- Peças comuns ---- */
-.cena-alvo {
-  position: relative;
-  min-width: 0;
+/* O próximo rascunho: só o contorno das letras, ainda sem preenchimento. */
+.linha-proximo .linha-cabeca {
+  cursor: default;
+}
+.linha-proximo .linha-nome > span {
+  background: none;
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.4);
+  transition: -webkit-text-stroke-color 0.5s, translate 0.6s var(--curva);
+}
+.linha-proximo.em-foco .linha-nome > span {
+  -webkit-text-stroke-color: #fff;
+}
+.linha-proximo .linha-meta {
+  text-transform: none;
+  letter-spacing: 0;
+  font: 0.92rem/1.4 var(--texto);
+}
+
+/* ---- A linha aberta --------------------------------------------------------------- */
+.painel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.7s var(--curva);
+}
+.linha.aberta .painel {
+  grid-template-rows: 1fr;
+}
+.painel-dentro {
   min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
-.app-genero {
-  margin: 0 0 8px;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--cor-app);
+.linha.aberta .painel-dentro {
+  opacity: 1;
+  transition: opacity 0.7s ease 0.2s;
 }
-.app-nome {
-  margin: 0 0 16px;
-  line-height: 1.04;
-  font-family: var(--fonte-nome);
-  font-size: calc(clamp(38px, 5.4vw, 80px) * var(--escala-nome, 1));
-  font-weight: 700;
+.painel-cena {
+  display: none;
 }
-.app-resumo {
-  margin: 0 0 14px;
-  font-size: clamp(17px, 1.45vw, 20px);
-  color: rgb(244 242 230 / 0.9);
+.painel-resumo {
+  max-width: 54ch;
+  margin: 6px 0 0;
+  font-size: 1.16rem;
+  line-height: 1.5;
+  color: var(--texto-2);
+  text-wrap: pretty;
 }
-.app-nota {
-  margin: 0 0 22px;
-  padding-left: 12px;
-  border-left: 2px solid var(--cor-app);
-  font-size: 15px;
-  color: var(--giz-2);
-}
-.app-botao {
+.botao {
   display: inline-flex;
   align-items: center;
-  align-self: flex-start;
   gap: 12px;
-  min-height: 52px;
-  padding: 0 24px;
+  margin-top: 24px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  background: var(--texto-1);
+  color: var(--fundo);
+  font-weight: 650;
   text-decoration: none;
-  white-space: nowrap;
-  font-weight: 600;
-  background: var(--cor-app);
-  color: var(--cor-app-tinta);
-  border-radius: var(--raio-app);
-  transition: transform 0.22s var(--curva), box-shadow 0.22s;
+  transition: box-shadow 0.4s, transform 0.3s var(--curva);
 }
-.app-botao svg {
+.botao svg {
+  flex: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: transform 0.22s var(--curva);
+  transition: transform 0.3s var(--curva);
 }
-.app-botao:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 26px color-mix(in srgb, var(--cor-app) 55%, transparent);
+.botao:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 5px rgb(255 255 255 / 0.12), 0 10px 50px -6px rgb(255 255 255 / 0.5);
 }
-.app-botao:hover svg {
-  transform: translateX(4px);
+.botao:hover svg {
+  transform: translateX(5px);
 }
-
-/* ---- Seção de cada app ---- */
-.parada-app .painel,
-.parada-detalhe .painel {
-  display: grid;
-  grid-template-columns: minmax(340px, 5fr) minmax(0, 7fr);
-  gap: clamp(20px, 3vw, 48px);
-  padding: var(--topo-altura) var(--margem) var(--base-altura);
+.painel-nota {
+  max-width: 60ch;
+  margin: 18px 0 0;
+  font-size: 0.86rem;
+  color: var(--texto-3);
 }
-.parada-app .cena-alvo,
-.parada-detalhe .cena-alvo {
-  grid-column: 2;
-  grid-row: 1;
-}
-.app-corpo,
-.detalhe-corpo {
-  grid-column: 1;
-  grid-row: 1;
-  align-self: center;
-  max-width: 560px;
-}
-
-/* ---- Exemplos ---- */
-.detalhe-titulo {
-  margin: 0 0 14px;
-  font-family: var(--fonte-nome);
-  font-size: clamp(27px, 3vw, 44px);
-  line-height: 1.1;
-  font-weight: 700;
-}
-.app-glowup .detalhe-titulo {
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(32px, 3.6vw, 54px);
+.painel-titulo {
+  margin: 38px 0 0;
+  font: 500 0.7rem/1.4 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--texto-3);
 }
 .exemplos {
-  list-style: none;
-  margin: 0 0 20px;
-  padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  margin: 12px 0 0;
+  padding: 0 0 40px;
+  list-style: none;
 }
-.exemplos h3 {
-  margin: 0 0 2px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--cor-app);
+.exemplos li {
+  padding: 16px 0 18px;
+  border-top: 1px solid var(--fio);
+}
+.exemplos h4 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 650;
 }
 .exemplos p {
   margin: 0;
-  font-size: 15px;
-  line-height: 1.36;
-  color: rgb(244 242 230 / 0.84);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--texto-2);
 }
 
-/* Antes e depois: fotos de verdade, na frente da luz */
-@property --corte {
-  syntax: "<percentage>";
-  inherits: true;
-  initial-value: 50%;
+/* ---- A janela: a app em destaque, viva ------------------------------------------- */
+.janela {
+  position: sticky;
+  top: 24px;
+  animation: surgir 1.2s ease 0.5s both;
 }
-/* A caixa fica parada (a tinta mede ela); só o conteúdo aparece com a parada. */
-.js .com-comparacao .cena-alvo > * {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* A moldura é um fio de 1px. Um ponto de luz, na cor da app, dá a volta nela. */
+.janela-quadro {
+  position: relative;
+  height: min(70vh, 700px);
+  padding: 1px;
+  border-radius: 17px;
+  background: #1c1e23;
 }
-.js .com-comparacao.ativa .cena-alvo > * {
-  opacity: 1;
-  transition: opacity 0.7s var(--curva) 0.5s;
+.janela-quadro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from var(--giro), transparent 0 78%, var(--luz) 94%, #fff 97%, transparent 100%);
+  animation: girar 7s linear infinite;
 }
-.com-comparacao .cena-alvo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@keyframes girar {
+  to {
+    --giro: 360deg;
+  }
 }
-.comparacao {
+/* A cor da app vaza para o escuro em volta, bem de leve. */
+.janela-quadro::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  z-index: -1;
+  background: var(--luz);
+  filter: blur(110px);
+  opacity: 0.17;
+}
+.janela-palco {
+  position: relative;
   height: 100%;
-  max-width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0b0c10;
+}
+.tela {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+.tela.ativa {
+  z-index: 1;
+  opacity: 1;
+  visibility: visible;
+  animation: revelar 0.75s var(--curva);
+}
+@keyframes revelar {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+/* A faixa de luz que passa na frente da cena que chega. */
+.janela-varredura {
+  position: absolute;
+  z-index: 2;
+  top: 1px;
+  bottom: 1px;
+  left: 0;
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 26px 5px rgb(255 255 255 / 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.janela-varredura.varrendo {
+  animation: varrer 0.75s var(--curva);
+}
+@keyframes varrer {
+  0% {
+    left: 0;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 2px);
+    opacity: 0;
+  }
+}
+.cena-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.janela-pe {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  font: 500 0.7rem/1.4 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--texto-3);
+}
+.janela-link {
+  color: var(--texto-1);
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.8rem;
+}
+.janela-link[href]::after {
+  content: " ↗";
+  color: var(--texto-3);
+}
+.janela-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.janela-linha {
+  max-width: 44ch;
+  min-height: 3em;
+  margin: 10px 0 0;
+  color: var(--texto-2);
+  text-wrap: pretty;
+}
+.janela-legenda {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--texto-3);
+}
+
+/* ---- Cena do GlowUp: antes e depois ----------------------------------------------- */
+.cena-glowup {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
 }
 .comparador {
   position: relative;
-  flex: 1 1 0;
+  flex: 1;
   min-height: 0;
-  max-width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: 12px;
   overflow: hidden;
-  background: #0b0b0c;
-  border: 1px solid rgb(255 255 255 / 0.14);
-  touch-action: pan-y;
+  background: #000;
 }
 .comp-pessoa {
   position: absolute;
   inset: 0;
-  visibility: hidden;
+  display: none;
 }
 .comp-pessoa.ativa {
-  visibility: visible;
+  display: block;
 }
 .comp-pessoa img {
   position: absolute;
   inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  object-position: 50% 30%;
 }
 .comp-depois {
   opacity: 0;
-  transition: opacity 0.45s var(--curva);
+  transition: opacity 0.5s;
 }
 .comp-depois.ativa {
   opacity: 1;
@@ -795,7 +624,7 @@ a {
   width: 2px;
   margin-left: -1px;
   background: #fff;
-  box-shadow: 0 0 12px rgb(255 184 119 / 0.9);
+  box-shadow: 0 0 16px 2px rgb(255 255 255 / 0.7);
   pointer-events: none;
 }
 .comp-linha::after {
@@ -803,21 +632,14 @@ a {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
+  width: 38px;
+  height: 38px;
+  margin: -19px;
   border-radius: 50%;
-  background: rgb(10 11 9 / 0.7);
-  border: 2px solid #fff;
-}
-/* A cortina atravessa a foto uma vez ao chegar, como no próprio app. */
-.parada.ativa .comparador:not(.mexeu) {
-  animation: cortina 1.6s var(--curva) 0.7s backwards;
-}
-@keyframes cortina {
-  from {
-    --corte: 100%;
-  }
+  background: #f5f4f0
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 7l-5 5 5 5M15 7l5 5-5 5'/%3E%3C/svg%3E")
+    center / 20px no-repeat;
+  box-shadow: 0 2px 16px rgb(0 0 0 / 0.55);
 }
 .comp-controle {
   position: absolute;
@@ -830,513 +652,317 @@ a {
   touch-action: pan-y;
 }
 .comparador:has(.comp-controle:focus-visible) {
-  outline: 2px solid var(--cor-app);
-  outline-offset: 3px;
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 .comp-rotulo {
   position: absolute;
-  top: 10px;
-  padding: 3px 9px;
+  top: 14px;
+  padding: 1px 12px 3px;
   border-radius: 999px;
-  font-family: var(--mono);
-  font-size: 12px;
-  background: rgb(10 11 9 / 0.62);
-  color: var(--giz);
+  background: rgb(0 0 0 / 0.55);
+  font: italic 1.05rem/1.4 "Instrument Serif", Georgia, serif;
   pointer-events: none;
 }
 .comp-rotulo-antes {
-  left: 10px;
-}
-/* Foto estreita: um rótulo em cima e outro embaixo, para não se sobreporem. */
-.comparador {
-  container-type: inline-size;
-}
-@container (max-width: 260px) {
-  .comp-rotulo {
-    font-size: 11px;
-    padding: 2px 7px;
-  }
-  .comp-rotulo-antes {
-    top: auto;
-    bottom: 10px;
-  }
+  left: 14px;
 }
 .comp-rotulo-depois {
-  right: 10px;
-  color: var(--cor-app);
+  right: 14px;
+}
+.comp-barra {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 34px 12px 14px;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.78));
 }
 .comp-escolha {
   display: flex;
-  flex: none;
-  gap: 4px;
-  padding: 4px;
-  max-width: calc(100% - 16px);
-  overflow-x: auto;
-  scrollbar-width: none;
-  border-radius: 999px;
-  background: rgb(10 11 9 / 0.72);
-}
-.comp-pessoas {
-  position: absolute;
-  top: 44px;
-  left: 50%;
-  transform: translateX(-50%);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
 }
 .comp-escolha button {
-  flex: none;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 0;
+  padding: 6px 14px;
   border-radius: 999px;
-  font: 500 13px/1 var(--texto);
-  color: var(--giz);
-  background: none;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  background: rgb(8 9 11 / 0.6);
+  font-size: 0.84rem;
   cursor: pointer;
 }
 .comp-escolha button[aria-pressed="true"] {
-  background: var(--cor-app);
-  color: var(--cor-app-tinta);
-}
-.comp-legenda {
-  margin: 0;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--giz-2);
-  text-align: center;
+  border-color: transparent;
+  background: #f5f4f0;
+  color: #08090b;
 }
 
-/* ---- Próximo rascunho ---- */
-.parada-proximo .painel {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  justify-items: center;
-  text-align: center;
+/* ---- Cena do Snake VS ------------------------------------------------------------- */
+.cena-snake {
+  display: flex;
+  flex-direction: column;
+  background: #0f1226;
+  font-family: Silkscreen, var(--mono);
+}
+.snake-placar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 18px 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8a92c4;
+}
+.snake-voce {
+  color: #6cf08a;
+}
+.snake-cpu {
+  color: #ff6c96;
+}
+.snake-placar b {
+  margin-left: 6px;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #fff;
+}
+.cena-snake .cena-canvas {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+}
+
+/* ---- Cena do GDSB: o cofre -------------------------------------------------------- */
+.cena-gdsb {
+  background: linear-gradient(170deg, #00186e 0%, #060b24 60%);
+}
+.cofre {
+  display: flex;
+  flex-direction: column;
   gap: 18px;
-  padding: var(--topo-altura) var(--margem) calc(var(--base-altura) + 20px);
-}
-.parada-proximo .cena-alvo {
-  width: min(100%, 560px);
   height: 100%;
+  padding: clamp(18px, 6%, 34px);
+  font-size: 0.98rem;
+  line-height: 1.3;
 }
-.proximo-corpo h2 {
-  margin: 0 0 6px;
-  font-size: clamp(30px, 4vw, 52px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-.proximo-corpo p {
-  margin: 0;
-  color: var(--giz-2);
-}
-
-/* ---- Botão de seguir ---- */
-.seguinte {
-  position: fixed;
-  z-index: 2;
-  left: 50%;
-  bottom: 6px;
-  transform: translateX(-50%);
-  display: none;
+.cofre-topo {
+  display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 46px;
-  padding: 0 16px;
-  white-space: nowrap;
-  text-decoration: none;
-  font-family: var(--mono);
-  font-size: 14px;
-  color: var(--giz);
+}
+.cofre-topo svg {
+  flex: none;
+  width: 34px;
+  height: 34px;
+}
+.cofre-arquivo {
+  font: 0.8rem var(--mono);
+  color: rgb(252 252 252 / 0.78);
+}
+.cofre-estado {
+  margin-left: auto;
+  padding: 4px 11px;
   border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f27beb;
+  transition: color 0.4s;
 }
-.js .seguinte {
-  display: inline-flex;
+.cofre-lista {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.seguinte svg {
-  stroke: var(--fluo);
+.cofre-lista li {
+  position: relative;
+  flex: 1;
+  max-height: 64px;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 12px;
+  border: 1px solid rgb(255 255 255 / 0.09);
+  background: rgb(255 255 255 / 0.06);
+}
+.cofre-lista i {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgb(217 54 211 / 0.28);
+  font-style: normal;
+  font-weight: 700;
+  color: #fbc4f8;
+  transition: color 0.3s;
+}
+.cofre-nome {
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #fcfcfc;
+}
+.cofre-senha {
+  font: 0.78rem var(--mono);
+  letter-spacing: 0.1em;
+  color: rgb(252 252 252 / 0.6);
+}
+.cofre-lista em {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  translate: 0 -50%;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #f27beb;
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 650;
+  color: #060b24;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.cofre-lista .copiada em {
+  opacity: 1;
+}
+.cofre-lista .copiada .cofre-senha {
+  opacity: 0;
+}
+/* Trancado: tudo é texto cifrado. */
+.cofre:not([data-fase="aberto"]) .cofre-nome {
+  font: 0.84rem/1.5 var(--mono);
+  color: #f6a4f1;
+}
+.cofre[data-fase^="tranc"] i {
+  color: transparent;
+}
+.cofre[data-fase^="tranc"] .cofre-senha {
+  color: rgb(246 164 241 / 0.5);
+}
+.cofre[data-fase="aberto"] .cofre-estado,
+.cofre[data-fase="abrindo"] .cofre-estado {
+  color: #7df0a6;
+}
+.cofre-digital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: rgb(252 252 252 / 0.62);
+}
+.cofre-digital svg {
+  width: 52px;
+  height: 52px;
+  fill: none;
+  stroke: #f27beb;
   stroke-width: 2;
   stroke-linecap: round;
-  stroke-linejoin: round;
-  animation: boiar 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px #d936d3);
+  transition: stroke 0.4s;
 }
-.seguinte.para-cima svg {
-  rotate: 180deg;
+.cofre[data-fase="trancado"] .cofre-digital svg {
+  animation: pulsar 1.2s ease-in-out infinite alternate;
 }
-.seguinte:hover {
-  color: var(--fluo);
+.cofre[data-fase="aberto"] .cofre-digital svg,
+.cofre[data-fase="abrindo"] .cofre-digital svg {
+  stroke: #7df0a6;
+  filter: drop-shadow(0 0 8px #2ecc71);
+}
+@keyframes pulsar {
+  to {
+    opacity: 0.45;
+  }
 }
 
-/* Sem JS: páginas em sequência, sem tinta. Na abertura, a palavra e a lista de apps. */
-html:not(.js) .parada {
-  min-height: 100vh;
+.sem-script {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  max-width: 36em;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+  font-size: 1.1rem;
+  color: var(--texto-2);
 }
-html:not(.js) #abertura .painel {
-  display: block;
-  padding: 24px var(--margem);
+.sem-script a {
+  font-weight: 650;
+  color: var(--texto-1);
 }
-html:not(.js) :is(.palco, .fichas, .indice, .dica-tinta, #menu) {
+html:not(.js) .janela {
   display: none;
 }
-.sem-script {
-  margin: 28px 0 0;
-  padding: 0 0 0 1.2em;
-  font-size: 18px;
-  line-height: 1.7;
-}
 
-/* ---- Telas baixas de computador ---- */
-@media (max-height: 760px) and (min-aspect-ratio: 1/1) {
-  :root {
-    --topo-altura: 68px;
-    --base-altura: 50px;
-  }
-  .js #abertura .painel,
-  #abertura .painel {
-    grid-template-rows: clamp(84px, 17vh, 130px) auto minmax(0, 1fr) auto;
-    padding-top: 16px;
-  }
-  .ficha .app-nome {
-    font-size: calc(clamp(32px, 3.8vw, 52px) * var(--escala-nome, 1));
-    margin-bottom: 6px;
-  }
-  .ficha-linha {
-    font-size: 16px;
-    margin-bottom: 14px;
-  }
-  .indice-app {
-    min-height: 44px;
-  }
-  .exemplos {
-    gap: 10px 18px;
-  }
-  .exemplos p {
-    font-size: 14px;
-  }
-  .app-resumo {
-    font-size: 16px;
-  }
-}
-
-/* Paisagem de celular: pouco alto para tudo, então o painel rola por dentro. */
-@media (max-height: 520px) and (min-aspect-ratio: 1/1) {
-  :root {
-    --topo-altura: 56px;
-    --base-altura: 16px;
-  }
-  .js .seguinte {
-    display: none;
-  }
-  #menu a {
-    min-height: 44px;
-    padding: 0 14px;
-    font-size: 14px;
-  }
-  .js #abertura .painel,
-  #abertura .painel {
-    grid-template-columns: minmax(330px, 1fr) minmax(0, 0.9fr);
-    grid-template-rows: 64px auto minmax(0, 1fr) auto;
-    row-gap: 6px;
-    padding-top: 12px;
-    padding-bottom: 10px;
-  }
-  .versao {
-    font-size: 12px;
-  }
-  .ficha .app-nome {
-    font-size: calc(30px * var(--escala-nome, 1));
-    margin-bottom: 4px;
-  }
-  .ficha .app-genero {
-    margin-bottom: 4px;
-  }
-  .ficha-linha {
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-  .ficha .app-botao {
-    min-height: 44px;
-    padding: 0 16px;
-  }
-  .indice ul {
-    grid-template-columns: 1fr 1fr;
-    column-gap: 12px;
-  }
-  .indice-app {
-    min-height: 44px;
-  }
-  .indice-plataforma {
-    display: none;
-  }
-  .parada-app .painel,
-  .parada-detalhe .painel {
-    grid-template-columns: minmax(300px, 1fr) minmax(0, 0.8fr);
-  }
-  .parada-app .cena-alvo,
-  .parada-detalhe .cena-alvo {
-    position: sticky;
-    top: 56px;
-    height: calc(100dvh - 110px);
-  }
-  .app-corpo,
-  .detalhe-corpo {
-    align-self: start;
-  }
-}
-
-/* ---- Celular e retrato: desenhado para o polegar ---- */
-@media (max-aspect-ratio: 1/1) {
-  :root {
-    --topo-altura: 48px;
-    --menu-altura: calc(62px + env(safe-area-inset-bottom));
-    --base-altura: calc(var(--menu-altura) + 38px);
-  }
-
-  /* O menu vira barra fixa embaixo, ao alcance do polegar. */
-  .topo {
-    height: var(--topo-altura);
-    padding-top: env(safe-area-inset-top);
-  }
-  #menu {
-    position: fixed;
-    inset: auto 0 0;
-    height: var(--menu-altura);
-    padding: 0 6px env(safe-area-inset-bottom);
-    gap: 2px;
-    background: rgb(10 11 9 / 0.94);
-    border-top: 1px solid rgb(244 242 230 / 0.16);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  #menu a,
-  .menu-inicio {
-    display: inline-flex !important;
-    flex: 1 0 auto;
-    justify-content: center;
-    gap: 6px;
-    min-height: 48px;
-    margin-block: 7px;
-    padding: 0 10px;
-    font-size: 14.5px;
-    border: 0;
-    border-radius: 12px;
-    background: none;
-  }
-  #menu a:hover {
-    transform: none;
-  }
-  #menu a[aria-current] {
-    background: var(--cor-app);
-  }
-
-  .seguinte {
-    bottom: calc(var(--menu-altura) + 2px);
-    min-height: 36px;
-    font-size: 13px;
-  }
-  .em-abertura .seguinte {
-    display: none;
-  }
-  /* Na abertura, o índice ocupa o lugar do menu, embaixo, ao alcance do polegar. */
-  .em-abertura #menu {
-    display: none;
-  }
-
-  /* Abertura: a palavra em cima, o palco, a ficha e a fileira de apps embaixo. */
-  .js #abertura .painel,
-  #abertura .painel {
+/* ---- Tela estreita: só o índice. A cena aparece dentro da linha aberta. ------------ */
+@media (max-width: 899px) {
+  .pagina {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: clamp(62px, 12vh, 120px) auto minmax(110px, 1fr) auto auto;
-    grid-template-areas: "marca" "versao" "palco" "ficha" "indice";
-    row-gap: 6px;
-    padding: calc(12px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom));
+    padding-top: 28px;
   }
-  .versao {
-    font-size: 12px;
-    justify-content: center;
-  }
-  .ficha .app-genero {
-    margin-bottom: 4px;
-  }
-  .ficha .app-nome {
-    font-size: calc(clamp(30px, 9vw, 44px) * var(--escala-nome, 1));
-    margin-bottom: 6px;
-  }
-  .ficha-linha {
-    font-size: 15px;
-    line-height: 1.34;
-    margin-bottom: 12px;
-  }
-  .ficha-acoes {
-    flex-wrap: nowrap;
-    gap: 16px;
-  }
-  .ficha .app-botao {
-    width: auto;
-    min-height: 48px;
-    padding: 0 20px;
-  }
-  /* Uma fileira que rola para o lado: cabe qualquer número de apps. */
-  .indice {
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-    margin: 4px -16px 0;
-    padding: 2px 16px 4px;
-  }
-  .indice::-webkit-scrollbar {
+  .janela {
     display: none;
   }
-  .indice ul,
-  .indice-longo ul {
-    display: flex;
-    gap: 8px;
-    width: max-content;
-    border: 0;
+  .linha-nome {
+    font-size: min(11.4cqw, 4.6rem);
   }
-  .indice-app {
-    min-height: 48px;
-    padding: 0 16px 0 14px;
-    border: 1px solid rgb(244 242 230 / 0.2);
-    border-radius: 999px;
-    scroll-snap-align: center;
+  .linha-cabeca {
+    padding-block: 14px 16px;
   }
-  .indice-app.em-foco {
-    border-color: var(--cor-app);
-    background: color-mix(in srgb, var(--cor-app) 14%, rgb(10 11 9 / 0.6));
+  .painel-cena {
+    display: block;
+    position: relative;
+    aspect-ratio: 5 / 6;
+    max-height: 70vh;
+    margin: 6px auto 22px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 1px solid var(--fio);
+    background: #0b0c10;
   }
-  .indice-app::after {
-    left: 16px;
-    right: 16px;
-    bottom: 7px;
-    height: 1.5px;
+  .painel-cena .tela {
+    opacity: 1;
+    visibility: visible;
+    animation: none;
   }
-  .indice-plataforma {
-    display: none;
+  .painel-resumo {
+    font-size: 1.06rem;
   }
-
-  /* Seções: a tinta em cima e o texto embaixo, perto do polegar. */
-  .parada-app .painel,
-  .parada-detalhe .painel {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(150px, 1fr) auto;
-    gap: 12px;
-    padding: var(--topo-altura) 16px var(--base-altura);
-  }
-  .parada-detalhe .painel {
-    grid-template-rows: minmax(130px, 1fr) auto;
-  }
-  .parada-app .cena-alvo,
-  .parada-detalhe .cena-alvo {
-    grid-column: 1;
-    grid-row: 1;
-  }
-  .app-corpo,
-  .detalhe-corpo {
-    grid-column: 1;
-    grid-row: 2;
-    align-self: end;
-    max-width: none;
-  }
-  .app-nome {
-    font-size: calc(clamp(32px, 10vw, 52px) * var(--escala-nome, 1));
-    margin-bottom: 10px;
-  }
-  .app-resumo {
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  .app-nota {
-    font-size: 14px;
-    margin-bottom: 14px;
-  }
-  .app-botao {
+  .botao {
     width: 100%;
     justify-content: center;
   }
-  .detalhe-titulo {
-    font-size: clamp(24px, 7vw, 34px);
-    margin-bottom: 8px;
+}
+@media (max-width: 560px) {
+  body {
+    font-size: 16px;
   }
   .exemplos {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 14px;
-    margin-bottom: 12px;
+    grid-template-columns: minmax(0, 1fr);
   }
-  .exemplos h3 {
-    font-size: 15px;
-  }
-  .exemplos p {
-    font-size: 13.5px;
-    line-height: 1.3;
-  }
-  /* No celular, a comparação ganha o espaço maior e os exemplos ficam só com o título. */
-  .com-comparacao .painel {
-    grid-template-rows: minmax(240px, 1fr) auto;
-  }
-  .com-comparacao .exemplos p {
+  .versao .rasura {
     display: none;
   }
-  .comp-escolha button {
-    min-height: 32px;
-    padding: 0 10px;
-    font-size: 12px;
-  }
 }
 
-/* Celulares pequenos: os exemplos viram uma coluna e o painel rola por dentro. */
-@media (max-aspect-ratio: 1/1) and (max-height: 700px) {
-  :root {
-    --base-altura: calc(var(--menu-altura) + 12px);
-  }
-  /* Sem espaço para o botão de seguir: o menu e o gesto de deslizar bastam. */
-  .js .seguinte {
-    display: none;
-  }
-  .parada-app .painel,
-  .parada-detalhe .painel {
-    grid-template-rows: minmax(84px, 1fr) auto;
-    gap: 8px;
-  }
-  .exemplos {
-    gap: 7px 12px;
-    margin-bottom: 10px;
-  }
-  .exemplos p {
-    font-size: 13px;
-  }
-  .parada-app .app-nota {
-    font-size: 13px;
-  }
-  .ficha-linha {
-    font-size: 14px;
-    line-height: 1.3;
-    margin-bottom: 10px;
-  }
-  .ficha .app-nome {
-    margin-bottom: 4px;
-  }
-}
-
-/* ---- Movimento ---- */
-@keyframes revelar {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-    filter: blur(6px);
-  }
-}
-@keyframes boiar {
-  50% {
-    transform: translateY(4px);
-  }
-}
-
+/* ---- Movimento reduzido ----------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;
   }

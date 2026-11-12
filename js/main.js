@@ -1,740 +1,282 @@
 import { apps } from './apps.js';
-import { montarCena, montarAbertura, TRACOS_PALAVRA, CAIXA_PALAVRA } from './cenas.js';
-import { criarTinta } from './tinta.js';
+import { cenaReino } from './cenas/reino.js';
+import { cenaGlowup } from './cenas/glowup.js';
+import { cenaGdsb } from './cenas/gdsb.js';
+import { cenaSnake } from './cenas/snakevs.js';
+import { cenaRabisco } from './cenas/rabisco.js';
+
+// As cenas vivas, pelo nome usado em apps.js. Sem cena própria, a app usa o rabisco.
+const CENAS = { reino: cenaReino, glowup: cenaGlowup, gdsb: cenaGdsb, snakevs: cenaSnake, rabisco: cenaRabisco };
 
 const raiz = document.documentElement;
 const reduzido = matchMedia('(prefers-reduced-motion: reduce)');
-const DURACAO_TROCA = 1350; // ms: quanto a tinta leva para virar outra cena
+const largo = matchMedia('(min-width: 900px)'); // duas colunas: o índice e a janela
+const LUZ_NEUTRA = '#ffffff';
+const PLATAFORMA = { web: 'Web', android: 'Android' };
+const PROXIMO = { nome: 'Próximo rascunho', linha: 'Ainda sem nome. Quando sair do papel, aparece aqui.' };
 
 // ---- Conteúdo vindo da lista de apps ------------------------------------------------
-const seta = '<svg viewBox="0 0 24 12" width="22" height="11" fill="none" aria-hidden="true"><path d="M1 6c7-1 14 1 21 0M17 1l5 5-5 5"/></svg>';
+const seta = '<svg viewBox="0 0 24 12" width="22" height="11" fill="none" aria-hidden="true"><path d="M1 6h21M17 1l5 5-5 5"/></svg>';
+const tipo = (a) => PLATAFORMA[a.plataforma] || a.plataforma;
 
-const PLATAFORMA = { web: 'Web', android: 'Android' };
-
-/** Link para a app. Quando ele leva a uma loja, abre em outra aba e avisa o leitor de tela. */
-function linkApp(a, texto, classe = 'app-botao') {
-  const fora = a.loja ? ` target="_blank" rel="noopener"` : '';
-  const aviso = a.loja ? `<span class="so-leitor"> (abre a ${a.loja} em outra aba)</span>` : '';
-  return `<a class="${classe}" href="${a.url}"${fora}>${texto}${aviso} ${seta}</a>`;
-}
-
-const menu = document.getElementById('menu');
-menu.innerHTML = [
-  '<a class="menu-inicio" href="#abertura" data-app="abertura">Início</a>',
-  ...apps.map((a) => `<a class="app-${a.id}" href="#${a.id}" data-app="${a.id}" title="${a.nome}"><i></i><span class="menu-nome">${a.nome}</span></a>`),
-].join('');
-// Com muitas apps, o menu do computador mostra só o ponto de cada uma e o nome da atual.
-menu.classList.toggle('menu-compacto', apps.length > 4);
-
-// Abertura: um índice compacto e uma ficha da app em destaque, que a tinta desenha no palco.
-const indice = document.getElementById('indice');
-indice.style.setProperty('--n', apps.length);
-indice.classList.toggle('indice-longo', apps.length > 4);
-indice.innerHTML = `<ul>${apps
-  .map(
-    (a, k) => `
-    <li><a class="indice-app app-${a.id}" href="#${a.id}" data-foco="${k}">
-      <i></i><span class="indice-nome">${a.nome}</span>
-      <span class="indice-plataforma">${PLATAFORMA[a.plataforma] || a.plataforma}</span>
-    </a></li>`,
-  )
-  .join('')}</ul>`;
-
-document.getElementById('fichas').innerHTML = apps
-  .map(
-    (a, k) => `
-    <article class="ficha app-${a.id}" data-ficha="${k}" aria-labelledby="ficha-${a.id}">
-      <p class="app-genero">${a.genero} · ${PLATAFORMA[a.plataforma] || a.plataforma}</p>
-      <h2 class="app-nome" id="ficha-${a.id}">${a.nome}</h2>
-      <p class="ficha-linha">${a.linha}</p>
-      <div class="ficha-acoes">
-        ${linkApp(a, a.botaoCurto)}
-        <a class="ficha-mais" href="#${a.id}">Saiba mais<span class="so-leitor"> sobre ${a.nome}</span></a>
-      </div>
-    </article>`,
-  )
-  .join('');
-
-/** Antes e depois: a original à esquerda da barra, a versão escolhida à direita. */
-function htmlComparacao(c) {
-  const img = (f, classe) => `<img class="${classe}" data-src="${f.src}" alt="${f.alt}" width="${c.largura}" height="${c.altura}">`;
-  const pessoas = c.pessoas
-    .map(
-      (p, k) => `
-      <div class="comp-pessoa${k === 0 ? ' ativa' : ''}" data-pessoa="${k}">
-        ${p.versoes.map((v, j) => img(v, `comp-depois${j === 0 ? ' ativa' : ''}`)).join('')}
-        ${img(p.original, 'comp-antes')}
-      </div>`,
-    )
-    .join('');
-  const trocaPessoa =
-    c.pessoas.length > 1
-      ? `<div class="comp-escolha comp-pessoas" role="group" aria-label="Exemplo">${c.pessoas
-          .map((p, k) => `<button type="button" data-pessoa="${k}" aria-pressed="${k === 0}">${p.nome}</button>`)
-          .join('')}</div>`
-      : '';
-  const versoes = (k) =>
-    c.pessoas[k].versoes.map((v, j) => `<button type="button" data-versao="${j}" aria-pressed="${j === 0}">${v.nome}</button>`).join('');
-  return `
-    <div class="comparacao">
-      <div class="comparador" style="--corte: 50%">
-        ${pessoas}
-        <span class="comp-rotulo comp-rotulo-antes" aria-hidden="true">Original</span>
-        <span class="comp-rotulo comp-rotulo-depois" aria-hidden="true">${c.pessoas[0].versoes[0].nome}</span>
-        <span class="comp-linha" aria-hidden="true"></span>
-        <input class="comp-controle" type="range" min="0" max="100" value="50" aria-label="Arraste para comparar a original com a editada">
-        ${trocaPessoa}
-      </div>
-      <div class="comp-escolha comp-versoes" role="group" aria-label="Versão editada">${versoes(0)}</div>
-      <p class="comp-legenda">${c.legenda}</p>
-    </div>`;
-}
-
-function htmlDetalhe(a) {
+function htmlLinha(a, i) {
+  if (!a) {
+    return `
+      <li class="linha linha-proximo" data-i="${i}" style="--i:${i}">
+        <div class="linha-cabeca">
+          <span class="linha-nome"><span>${PROXIMO.nome}</span></span>
+          <span class="linha-meta">${PROXIMO.linha}</span>
+        </div>
+      </li>`;
+  }
   const d = a.detalhe;
-  const comparacao = d.comparacao ? htmlComparacao(d.comparacao) : '';
+  const fora = a.loja ? ' target="_blank" rel="noopener"' : '';
+  const aviso = a.loja ? `<span class="so-leitor"> (abre a ${a.loja} em outra aba)</span>` : '';
   return `
-    <section id="${a.id}-exemplos" class="parada parada-detalhe app-${a.id}${comparacao ? ' com-comparacao' : ''}" data-cena="${d.cena}" data-app="${a.id}" data-rotulo="${d.rotulo}">
-      <div class="painel" tabindex="-1">
-        <div class="cena-alvo item">${comparacao}</div>
-        <div class="detalhe-corpo">
-          <p class="app-genero item">${a.nome}</p>
-          <h2 class="detalhe-titulo item">${d.titulo}</h2>
-          <ul class="exemplos">
-            ${d.exemplos.map((e) => `<li class="item"><h3>${e.titulo}</h3><p>${e.texto}</p></li>`).join('')}
-          </ul>
-          ${linkApp(a, a.botao, 'app-botao item')}
+    <li class="linha" id="${a.id}" data-i="${i}" style="--i:${i};--cor-app:${a.cor}">
+      <h2 class="linha-titulo">
+        <button type="button" class="linha-cabeca" id="botao-${a.id}" aria-expanded="false" aria-controls="painel-${a.id}">
+          <span class="linha-nome"><span>${a.nome}</span></span>
+          <span class="linha-meta">${a.genero}<span class="linha-tipo"><i></i>${tipo(a)}</span></span>
+          <span class="linha-sinal" aria-hidden="true"></span>
+        </button>
+      </h2>
+      <div class="painel" id="painel-${a.id}" role="region" aria-labelledby="botao-${a.id}" inert>
+        <div class="painel-dentro">
+          <div class="painel-cena"></div>
+          <p class="painel-resumo">${a.resumo}</p>
+          <a class="botao" href="${a.url}"${fora}><span>${a.botao}${aviso}</span> ${seta}</a>
+          ${a.nota ? `<p class="painel-nota">${a.nota}</p>` : ''}
+          ${
+            d
+              ? `<h3 class="painel-titulo">${d.titulo}</h3>
+                 <ul class="exemplos">${d.exemplos.map((e) => `<li><h4>${e.titulo}</h4><p>${e.texto}</p></li>`).join('')}</ul>`
+              : ''
+          }
         </div>
       </div>
-    </section>`;
+    </li>`;
 }
 
-document.getElementById('paradas-apps').innerHTML = apps
-  .map(
-    (a) => `
-    <section id="${a.id}" class="parada parada-app app-${a.id}" data-cena="${a.cena}" data-app="${a.id}" data-rotulo="${a.nome}">
-      <div class="painel" tabindex="-1">
-        <div class="cena-alvo item"></div>
-        <div class="app-corpo">
-          <p class="app-genero item">${a.genero}</p>
-          <h2 class="app-nome item">${a.nome}</h2>
-          <p class="app-resumo item">${a.resumo}</p>
-          ${a.nota ? `<p class="app-nota item">${a.nota}</p>` : ''}
-          ${linkApp(a, a.botao, 'app-botao item')}
-        </div>
-      </div>
-    </section>
-    ${a.detalhe ? htmlDetalhe(a) : ''}`,
-  )
-  .join('');
-
-// Sem WebGL, a palavra fica num SVG com o mesmo desenho.
-{
-  const d = TRACOS_PALAVRA.map((t) => `M${t.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join('L')}`).join('');
-  const { x0, y0, x1, y1 } = CAIXA_PALAVRA;
-  document
-    .getElementById('marca')
-    .insertAdjacentHTML('beforeend', `<svg class="marca-svg" viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" aria-hidden="true"><path d="${d}"/></svg>`);
-}
-
-// Comparadores: a barra, as versões e as pessoas
-document.querySelectorAll('.comparacao').forEach((caixa) => {
-  const c = caixa.querySelector('.comparador');
-  const controle = c.querySelector('.comp-controle');
-  const rotulo = c.querySelector('.comp-rotulo-depois');
-  const pessoas = [...c.querySelectorAll('.comp-pessoa')];
-  const dados = apps.find((a) => c.closest(`.app-${a.id}`))?.detalhe.comparacao;
-  let pessoa = 0;
-
-  controle.addEventListener('input', () => {
-    c.classList.add('mexeu');
-    c.style.setProperty('--corte', `${controle.value}%`);
-  });
-
-  function versao(j) {
-    pessoas[pessoa].querySelectorAll('.comp-depois').forEach((img, i) => img.classList.toggle('ativa', i === j));
-    caixa.querySelectorAll('[data-versao]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.versao === j));
-    rotulo.textContent = dados.pessoas[pessoa].versoes[j].nome;
-  }
-  caixa.querySelector('.comp-versoes').addEventListener('click', (e) => {
-    const b = e.target.closest('[data-versao]');
-    if (b) versao(+b.dataset.versao);
-  });
-  c.querySelector('.comp-pessoas')?.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-pessoa]');
-    if (!b) return;
-    pessoa = +b.dataset.pessoa;
-    pessoas.forEach((p, k) => p.classList.toggle('ativa', k === pessoa));
-    c.querySelectorAll('[data-pessoa]').forEach((x) => x.tagName === 'BUTTON' && x.setAttribute('aria-pressed', +x.dataset.pessoa === pessoa));
-    caixa.querySelector('.comp-versoes').innerHTML = dados.pessoas[pessoa].versoes
-      .map((v, j) => `<button type="button" data-versao="${j}" aria-pressed="${j === 0}">${v.nome}</button>`)
-      .join('');
-    versao(0);
-  });
-});
-
-// Atraso de entrada de cada item do painel
-document.querySelectorAll('.painel').forEach((p) => {
-  p.querySelectorAll('.item').forEach((el, i) => el.style.setProperty('--i', i));
-});
-
-// ---- As paradas: uma tela por vez, trocada por gesto ---------------------------------
-const paradas = [...document.querySelectorAll('.parada')];
-const indicePorId = new Map(paradas.map((p, i) => [p.id, i]));
-const seguinte = document.getElementById('seguinte');
-const seguinteTexto = document.getElementById('seguinte-texto');
-const linksMenu = [...document.querySelectorAll('#menu a')];
-
-let ativa = 0;
-let ultimoGesto = -1e9;
-const tinta = { troca: null, destaque: null };
-
-// ---- A app em destaque na abertura -------------------------------------------------
-// Sozinha, a abertura passa de uma app para a outra. Quando a pessoa escolhe uma no índice,
-// ela para de girar. Com o ponteiro no palco ou na ficha, ela espera.
-const GIRO_MS = 6500;
+const itens = [...apps, null]; // a última linha é o próximo rascunho
+const indice = document.getElementById('indice');
 const palco = document.getElementById('palco');
-const linksIndice = [...indice.querySelectorAll('[data-foco]')];
-const fichas = [...document.querySelectorAll('[data-ficha]')];
+const varredura = document.getElementById('varredura');
+const janela = {
+  link: document.getElementById('janela-link'),
+  tipo: document.getElementById('janela-tipo'),
+  linha: document.getElementById('janela-linha'),
+  legenda: document.getElementById('janela-legenda'),
+};
+
+indice.innerHTML = itens.map(htmlLinha).join('');
+
+// ---- As linhas e as cenas -----------------------------------------------------------
+const linhas = [...indice.children].map((el, i) => {
+  const app = itens[i];
+  const tela = document.createElement('div');
+  tela.className = 'tela';
+  if (app) tela.style.cssText = `--cor-app:${app.cor};--cor-app-tinta:${app.corTinta}`;
+  palco.append(tela);
+  const cena = (CENAS[app?.cena] || cenaRabisco)(tela, app || { cor: '#ffffff' }) || cenaRabisco(tela, app);
+  cena.medir();
+  return {
+    el,
+    app,
+    tela,
+    cena,
+    alvoCena: tela.querySelector('canvas') || tela,
+    nome: el.querySelector('.linha-nome > span'),
+    botao: el.querySelector('button.linha-cabeca'),
+    painel: el.querySelector('.painel'),
+    vaga: el.querySelector('.painel-cena'), // onde a cena fica na tela estreita
+  };
+});
+
+const parada = (l) => (l.cena.parado ? l.cena.parado() : l.cena.quadro(0.016, 0));
+for (const l of linhas) {
+  // A cena se refaz quando a tela dela muda de tamanho.
+  new ResizeObserver(() => {
+    l.cena.medir();
+    if (reduzido.matches) parada(l);
+  }).observe(l.tela);
+}
+
 let foco = -1;
-let giro = 0;
-let giroLivre = true;
-let giroEspera = false;
+let aberta = null;
 
-function destacar(k, { pessoa = false } = {}) {
-  k = (k + apps.length) % apps.length;
-  if (pessoa) pararGiro();
-  if (k !== foco) {
-    foco = k;
-    linksIndice.forEach((l, j) => l.classList.toggle('em-foco', j === k));
-    fichas.forEach((f, j) => f.classList.toggle('ativa', j === k));
-    palco.className = `palco cena-alvo item app-${apps[k].id}`;
-    // No celular, o índice é uma fileira que rola: a app escolhida vem para o meio.
-    const l = linksIndice[k];
-    if (indice.scrollWidth > indice.clientWidth + 2) {
-      indice.scrollTo({ left: l.offsetLeft - (indice.clientWidth - l.offsetWidth) / 2, behavior: reduzido.matches ? 'auto' : 'smooth' });
-    }
-    tinta.destaque?.(k);
+/** Tela larga: todas as cenas moram na janela. Tela estreita: cada uma dentro da sua linha. */
+function arrumar() {
+  for (const l of linhas) (largo.matches || !l.vaga ? palco : l.vaga).append(l.tela);
+}
+largo.addEventListener('change', arrumar);
+arrumar();
+
+/** A app em destaque: a linha acende e a janela mostra a cena dela. */
+function focar(i) {
+  if (i === foco) return;
+  foco = i;
+  const a = itens[i];
+  linhas.forEach((l, k) => {
+    l.el.classList.toggle('em-foco', k === i);
+    l.tela.classList.toggle('ativa', k === i);
+  });
+  raiz.style.setProperty('--luz', a ? a.cor : LUZ_NEUTRA);
+  if (a) {
+    janela.link.textContent = a.loja || new URL(a.url).host;
+    janela.link.href = a.url;
+    if (a.loja) janela.link.target = '_blank';
+    else janela.link.removeAttribute('target');
+    janela.link.rel = a.loja ? 'noopener' : '';
+  } else {
+    janela.link.textContent = '';
+    janela.link.removeAttribute('href');
   }
-  agendarGiro();
+  janela.tipo.textContent = a ? tipo(a) : '';
+  janela.linha.textContent = (a || PROXIMO).linha;
+  janela.legenda.textContent = a ? a.legenda || a.detalhe?.comparacao?.legenda || '' : '';
+  // Uma faixa de luz atravessa a janela a cada troca.
+  varredura.classList.remove('varrendo');
+  void varredura.offsetWidth;
+  varredura.classList.add('varrendo');
 }
 
-function agendarGiro() {
-  clearTimeout(giro);
-  indice.classList.remove('girando');
-  if (!giroLivre || giroEspera || reduzido.matches || ativa !== 0 || document.hidden) return;
-  void indice.offsetWidth; // recomeça a barrinha do tempo
-  indice.classList.add('girando');
-  giro = setTimeout(() => ativa === 0 && destacar(foco + 1), GIRO_MS);
+function abrir(i, { rolar = true } = {}) {
+  const l = linhas[i];
+  if (!l?.app) return;
+  if (aberta === i) return fecharLinha();
+  aberta = i;
+  linhas.forEach((x, k) => {
+    x.el.classList.toggle('aberta', k === i);
+    x.botao?.setAttribute('aria-expanded', k === i);
+    if (x.painel) x.painel.inert = k !== i;
+  });
+  raiz.classList.add('com-aberta');
+  focar(i);
+  history.replaceState(null, '', `#${l.app.id}`);
+  // Espera a outra linha fechar para saber onde esta foi parar.
+  if (rolar) setTimeout(() => l.el.scrollIntoView({ block: 'start', behavior: reduzido.matches ? 'auto' : 'smooth' }), 380);
 }
 
-function pararGiro() {
-  giroLivre = false;
-  clearTimeout(giro);
-  indice.classList.remove('girando');
+function fecharLinha() {
+  if (aberta === null) return;
+  const l = linhas[aberta];
+  aberta = null;
+  l.el.classList.remove('aberta');
+  l.botao.setAttribute('aria-expanded', 'false');
+  l.painel.inert = true;
+  raiz.classList.remove('com-aberta');
+  history.replaceState(null, '', location.pathname + location.search);
 }
 
-indice.style.setProperty('--giro', `${GIRO_MS}ms`);
-destacar(0);
-
-// Mouse: passar por cima destaca. Toque: o primeiro toque destaca, o segundo entra.
-indice.addEventListener('pointerover', (e) => {
-  const l = e.target.closest('[data-foco]');
-  if (l && e.pointerType === 'mouse') destacar(+l.dataset.foco, { pessoa: true });
-});
-indice.addEventListener('focusin', (e) => {
-  const l = e.target.closest('[data-foco]');
-  if (l?.matches(':focus-visible')) destacar(+l.dataset.foco, { pessoa: true });
-});
 indice.addEventListener('click', (e) => {
-  const l = e.target.closest('[data-foco]');
-  if (!l || +l.dataset.foco === foco) return;
-  e.preventDefault();
-  e.stopPropagation();
-  destacar(+l.dataset.foco, { pessoa: true });
+  const b = e.target.closest('button.linha-cabeca');
+  if (b) abrir(+b.closest('.linha').dataset.i);
 });
-for (const el of [palco, document.getElementById('fichas')]) {
-  el.addEventListener('pointerenter', (e) => {
-    if (e.pointerType !== 'mouse') return;
-    giroEspera = true;
-    agendarGiro();
-  });
-  el.addEventListener('pointerleave', () => {
-    giroEspera = false;
-    agendarGiro();
-  });
-}
-reduzido.addEventListener('change', agendarGiro);
-document.addEventListener('visibilitychange', agendarGiro);
-
-function carregarCapturas(i) {
-  paradas[i]?.querySelectorAll('img[data-src]').forEach((img) => {
-    img.src = img.dataset.src;
-    img.removeAttribute('data-src');
-  });
-}
-
-function atualizarAoRedor() {
-  const parada = paradas[ativa];
-  const app = parada.dataset.app || 'abertura';
-  raiz.dataset.parada = app;
-  raiz.classList.toggle('em-abertura', ativa === 0);
-  for (const l of linksMenu) {
-    if (l.dataset.app === app) l.setAttribute('aria-current', 'true');
-    else l.removeAttribute('aria-current');
-  }
-  // No celular, o menu de baixo rola para o lado quando há muitas apps: a atual fica à vista.
-  const atual = menu.querySelector('[aria-current]');
-  if (atual && menu.scrollWidth > menu.clientWidth + 2) {
-    menu.scrollTo({ left: atual.offsetLeft - (menu.clientWidth - atual.offsetWidth) / 2, behavior: 'auto' });
-  }
-  const ultima = ativa === paradas.length - 1;
-  const destino = ultima ? paradas[0] : paradas[ativa + 1];
-  seguinte.href = `#${destino.id}`;
-  seguinte.classList.toggle('para-cima', ultima);
-  seguinteTexto.textContent = ultima ? 'Voltar ao início' : destino.dataset.rotulo;
-  carregarCapturas(ativa);
-  carregarCapturas(ativa + 1);
-}
-
-function irPara(i, { focar = false } = {}) {
-  i = Math.max(0, Math.min(paradas.length - 1, i));
-  if (i === ativa) return;
-  raiz.classList.remove('primeira-vez');
-  raiz.style.setProperty('--dir', i > ativa ? 1 : -1);
-  const saindo = paradas[ativa];
-  saindo.classList.remove('ativa');
-  saindo.classList.add('saindo');
-  setTimeout(() => saindo.classList.remove('saindo'), reduzido.matches ? 0 : 420);
-  ativa = i;
-  paradas[i].classList.remove('saindo');
-  paradas[i].classList.add('ativa');
-  paradas[i].querySelector('.painel').scrollTop = 0;
-  atualizarAoRedor();
-  const hash = i === 0 ? location.pathname + location.search : `#${paradas[i].id}`;
-  history.replaceState(null, '', hash);
-  if (focar) paradas[i].querySelector('.painel').focus({ preventScroll: true });
-  tinta.troca?.(i);
-  agendarGiro();
-}
-
-/** O painel ainda tem o que rolar nessa direção? Tela baixa ou zoom alto chegam aqui. */
-function painelRola(dir) {
-  const p = paradas[ativa].querySelector('.painel');
-  if (p.scrollHeight <= p.clientHeight + 2) return false;
-  return dir > 0 ? p.scrollTop + p.clientHeight < p.scrollHeight - 2 : p.scrollTop > 2;
-}
-
-function passo(dir) {
-  const agora = performance.now();
-  if (agora - ultimoGesto < 700) return;
-  const destino = ativa + dir;
-  if (destino < 0 || destino >= paradas.length) return;
-  ultimoGesto = agora;
-  irPara(destino);
-}
-
-// Roda do mouse e trackpad: um gesto, uma parada. A inércia do trackpad não conta.
-let somaRoda = 0;
-let ultimaRoda = 0;
-let rodaGasta = false;
-addEventListener(
-  'wheel',
-  (e) => {
-    if (e.ctrlKey) return;
-    const agora = performance.now();
-    const dir = Math.sign(e.deltaY);
-    if (!dir || painelRola(dir)) return;
-    if (agora - ultimaRoda > 140) {
-      somaRoda = 0;
-      rodaGasta = false; // só volta a contar depois de uma pausa
-    }
-    ultimaRoda = agora;
-    somaRoda += e.deltaY;
-    if (Math.abs(somaRoda) > 36 && !rodaGasta) {
-      rodaGasta = true;
-      passo(dir);
-    }
-  },
-  { passive: true },
-);
-
-// Toque: deslizar na vertical troca de parada.
-let toque = null;
-addEventListener(
-  'touchstart',
-  (e) => {
-    const t = e.touches[0];
-    toque = {
-      x: t.clientX,
-      y: t.clientY,
-      topo: paradas[ativa].querySelector('.painel').scrollTop,
-      dedos: e.touches.length,
-      noIndice: indice.contains(e.target),
-    };
-  },
-  { passive: true },
-);
-addEventListener(
-  'touchend',
-  (e) => {
-    if (!toque || toque.dedos > 1) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - toque.x;
-    const dy = t.clientY - toque.y;
-    const rolou = paradas[ativa].querySelector('.painel').scrollTop !== toque.topo;
-    const noIndice = toque.noIndice;
-    toque = null;
-    // Na abertura, deslizar para o lado troca a app em destaque. O índice rola sozinho.
-    if (ativa === 0 && !noIndice && Math.abs(dx) > 44 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-      destacar(foco + (dx < 0 ? 1 : -1), { pessoa: true });
-      return;
-    }
-    if (rolou || Math.abs(dy) < 44 || Math.abs(dy) < Math.abs(dx) * 1.3) return;
-    const dir = dy < 0 ? 1 : -1;
-    if (!painelRola(dir)) passo(dir);
-  },
-  { passive: true },
-);
-
-// Teclado
+// Com uma linha aberta, a janela fica com ela: passar por outra linha não troca a cena.
+const destacar = (e) => {
+  const l = e.target.closest('.linha');
+  if (l && aberta === null) focar(+l.dataset.i);
+};
+indice.addEventListener('pointerover', (e) => e.pointerType === 'mouse' && destacar(e));
+indice.addEventListener('focusin', destacar);
 addEventListener('keydown', (e) => {
-  if (e.altKey || e.ctrlKey || e.metaKey) return;
-  const para = { ArrowDown: 1, PageDown: 1, ' ': 1, ArrowUp: -1, PageUp: -1 }[e.key];
-  if (para) {
-    if (painelRola(para)) return;
-    e.preventDefault();
-    if (!e.repeat) passo(para);
-  } else if (ativa === 0 && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
-    destacar(foco + (e.key === 'ArrowRight' ? 1 : -1), { pessoa: true });
-  } else if (e.key === 'Home') {
-    irPara(0, { focar: true });
-  } else if (e.key === 'End') {
-    irPara(paradas.length - 1, { focar: true });
+  if (e.key === 'Escape' && aberta !== null) {
+    const b = linhas[aberta].botao;
+    fecharLinha();
+    b.focus();
   }
 });
-
-// Links internos trocam de parada, sem pular a página.
-document.addEventListener('click', (e) => {
-  const a = e.target.closest('a[href^="#"]');
-  if (!a) return;
-  const i = indicePorId.get(a.getAttribute('href').slice(1));
-  if (i === undefined) return;
-  e.preventDefault();
-  irPara(i, { focar: true });
-});
-
 addEventListener('hashchange', () => {
-  const i = indicePorId.get(location.hash.slice(1));
-  irPara(i ?? 0);
+  const i = apps.findIndex((a) => a.id === location.hash.slice(1));
+  if (i >= 0 && i !== aberta) abrir(i);
 });
 
-// Abre na parada do endereço, se houver.
-{
-  const i = indicePorId.get(location.hash.slice(1));
-  if (i) {
-    paradas[0].classList.remove('ativa');
-    paradas[i].classList.add('ativa');
-    ativa = i;
-    raiz.classList.remove('primeira-vez');
-  }
-  atualizarAoRedor();
-}
-
-// ---- A tinta ----------------------------------------------------------------------
-const canvas = document.getElementById('tinta');
-const pequeno = Math.min(innerWidth, innerHeight) < 620 || matchMedia('(hover: none)').matches;
-const fraco = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
-const motor = criarTinta(canvas, {
-  particulas: Math.round((pequeno ? 24000 : 60000) * (fraco ? 0.6 : 1)),
-  dprMax: pequeno ? 1.5 : 1.5,
-});
-
-// As cores que a íris passeia: âmbar, jade, azul-gelo e violeta.
-const PALETA_IRIS = [
-  [1.0, 0.64, 0.3],
-  [0.34, 0.92, 0.6],
-  [0.42, 0.76, 1.0],
-  [0.84, 0.52, 1.0],
-];
-function corDaIris(t) {
-  const f = t / 4.5;
-  const n = PALETA_IRIS.length;
-  const i = ((Math.floor(f) % n) + n) % n;
-  const de = PALETA_IRIS[i];
-  const para = PALETA_IRIS[(i + 1) % n];
-  const k = Math.max(0, ((f - Math.floor(f)) - 0.72) / 0.28);
-  const u = k * k * (3 - 2 * k);
-  return de.map((v, c) => v + (para[c] - v) * u);
-}
-
-// Só agora: com movimento reduzido, iniciarTinta já desenha um quadro e precisa da paleta acima.
-if (!motor) raiz.classList.add('sem-webgl');
-else iniciarTinta();
-
-function iniciarTinta() {
-  let vh = 1;
-  let vw = 1;
-  let metas = [];
-
-  const caixa = (el) => {
-    const r = el.getBoundingClientRect();
-    return { left: r.left, top: r.top, width: r.width, height: r.height };
-  };
-
-  let medidaAnterior = '';
-  function construir() {
-    // Redesenhar sorteia de novo o lugar de cada partícula e espalha a tinta. Só vale a pena
-    // quando o layout mudou mesmo.
-    const medida = JSON.stringify([
-      canvas.clientWidth,
-      canvas.clientHeight,
-      devicePixelRatio,
-      ...[...document.querySelectorAll('#marca, .cena-alvo')].map(caixa),
-    ]);
-    if (medida === medidaAnterior) return;
-    medidaAnterior = medida;
-    vw = canvas.clientWidth;
-    vh = canvas.clientHeight;
-    motor.redimensionar(vw, vh, devicePixelRatio || 1);
-    // Camadas: uma por app na abertura (a palavra e a app no palco), depois uma por parada.
-    const desenhos = [
-      ...montarAbertura(caixa(document.getElementById('marca')), caixa(palco), apps.map((a) => a.cena)),
-      ...paradas.slice(1).map((p) => montarCena(p.dataset.cena, caixa(p.querySelector('.cena-alvo')))),
-    ];
-    metas = desenhos.map((d) => d.meta);
-    motor.definirCenas(desenhos, { abertura: apps.length });
-  }
-  construir();
-
-  // Ponteiro. No toque, ele só existe enquanto o dedo está na tela.
-  const rato = { x: -9999, y: -9999, sx: -9999, sy: -9999, vx: 0, vy: 0, ultimo: -1e9 };
-  const mover = (x, y) => {
-    if (rato.sx < -9000) {
-      rato.sx = x;
-      rato.sy = y;
-    }
-    rato.x = x;
-    rato.y = y;
+// ---- A luz: o ponteiro acende os nomes por onde passa -------------------------------
+const rato = { x: 0, y: 0, ultimo: -1e9 };
+const luz = { x: -999, y: -999, pronta: false };
+addEventListener(
+  'pointermove',
+  (e) => {
+    if (e.pointerType !== 'mouse') return;
+    rato.x = e.clientX;
+    rato.y = e.clientY;
     rato.ultimo = performance.now();
-  };
-  addEventListener('pointermove', (e) => mover(e.clientX, e.clientY), { passive: true });
-  addEventListener('pointerdown', (e) => mover(e.clientX, e.clientY), { passive: true });
-  addEventListener('touchmove', (e) => mover(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  },
+  { passive: true },
+);
 
-  let forca = 0;
-  let t = 0;
-  let escrita = ativa === 0 ? 0 : 2;
-  let anterior = performance.now();
-  let rodando = false;
-  let lentos = 0;
-  let amostras = 0;
-  let cortinaX = null;
-  const olhar = [0, 0];
-  let olharLivre = [0, 0];
-  let olharAte = 0;
+let anterior = performance.now();
+let t = 0;
+let rodando = false;
 
-  // A troca de cena corre no relógio, não na rolagem: tinta e textos andam juntos.
-  // cenaDe e cenaPara são camadas do motor; paradaPara é a parada, que move o papel.
-  const camada = (i) => (i === 0 ? foco : apps.length - 1 + i);
-  let cenaDe = camada(ativa);
-  let cenaPara = cenaDe;
-  let paradaPara = ativa;
-  let inicioTroca = -1e9;
-  let duracao = DURACAO_TROCA;
-  let sentido = 1;
-  let papelY = ativa * 260;
-  let papelDe = papelY;
+function quadro(agora) {
+  if (!rodando) return;
+  requestAnimationFrame(quadro);
+  const real = (agora - anterior) / 1000;
+  anterior = agora;
+  if (real > 0.5 || real <= 0) return; // voltou de outra aba
+  const dt = Math.min(real, 1 / 30);
+  t += dt;
 
-  function trocar(c, parada, sent, ms) {
-    sentido = sent;
-    cenaDe = cenaPara;
-    cenaPara = c;
-    paradaPara = parada;
-    duracao = ms;
-    inicioTroca = performance.now();
-    papelDe = papelY;
-    if (reduzido.matches) desenhoParado();
+  // Com o mouse parado, ou sem mouse, a luz passeia sozinha pelo índice.
+  const comMouse = agora - rato.ultimo < 3000;
+  let ax = rato.x;
+  let ay = rato.y;
+  if (!comMouse) {
+    const r = indice.getBoundingClientRect();
+    ax = r.left + r.width * (0.32 + 0.24 * Math.sin(t * 0.5));
+    ay = r.top + r.height * (0.5 + 0.5 * Math.sin(t * 0.33));
   }
-  tinta.troca = (i) => trocar(camada(i), i, i > paradaPara ? 1 : -1, DURACAO_TROCA);
-  // Trocar a app do palco não desliza nada: só o desenho do palco se refaz.
-  tinta.destaque = (k) => {
-    if (paradaPara === 0) trocar(k, 0, 0, 950);
-  };
-
-  const suave = (x) => x * x * (3 - 2 * x);
-
-  function montarQuadro(dt, snap) {
-    const agora = performance.now();
-    const u = snap ? 1 : Math.min(1, (agora - inicioTroca) / duracao);
-    if (u >= 1) cenaDe = cenaPara;
-    const mix = cenaDe === cenaPara ? 0 : suave(u);
-    // Uma cena sai para um lado e a outra chega do outro, como páginas no mesmo papel.
-    const anda = vh * 0.16;
-    const offA = [0, -sentido * anda * mix];
-    const offB = [0, sentido * anda * (1 - mix)];
-    papelY = papelDe + (paradaPara * 260 - papelDe) * suave(u);
-
-    // A cortina do antes e depois segue o ponteiro; sem ele, passeia sozinha.
-    const c = metas[cenaPara].cortina;
-    let cortina = 0;
-    if (c) {
-      const sobre = forca > 0.3 && Math.abs(rato.sx - c.cx) < c.larg * 0.6 && Math.abs(rato.sy - c.cy) < c.alt * 0.6;
-      const alvo = sobre ? rato.sx : c.cx + Math.sin(t * 0.85) * 0.34 * c.larg;
-      cortinaX = cortinaX === null || snap ? alvo : cortinaX + (alvo - cortinaX) * Math.min(1, dt * 5);
-      cortina = cortinaX;
-    }
-
-    // O olho do GlowUp: dilata, pisca, troca de cor e segue o ponteiro.
-    const ol = metas[cenaPara].olho;
-    let pupila = 0.38;
-    let piscar = 0;
-    let faixa = -9999;
-    let iris = PALETA_IRIS[0];
-    if (!snap) {
-      iris = corDaIris(t);
-      if (ol) {
-        const [ox, oy, , hw] = ol.geo;
-        const perto = forca > 0.2 && Math.hypot(rato.sx - ox, rato.sy - oy) < hw * 1.3;
-        pupila = 0.37 + 0.03 * Math.sin(t * 0.63) + (perto ? 0.09 : 0);
-        const fase = t % 6.7;
-        piscar = fase < 0.3 ? Math.sin((Math.PI * fase) / 0.3) ** 0.8 : 0;
-        const u2 = (t % 10) / 1.5;
-        if (u2 < 1) faixa = ox + c.larg * (u2 * 1.7 - 0.85);
-        let ax;
-        let ay;
-        if (forca > 0.2) {
-          ax = (rato.sx - ox) / (hw * 1.5);
-          ay = (rato.sy - oy) / (hw * 1.5);
-          const l = Math.hypot(ax, ay);
-          if (l > 1) {
-            ax /= l;
-            ay /= l;
-          }
-          ax *= 0.42;
-          ay *= 0.2;
-        } else {
-          // Sem ponteiro, o olhar passeia em saltos curtos, como um olho de verdade.
-          if (t > olharAte) {
-            olharAte = t + 1.8 + Math.random() * 2.6;
-            olharLivre = [(Math.random() - 0.5) * 0.46, (Math.random() - 0.5) * 0.16];
-          }
-          [ax, ay] = olharLivre;
-        }
-        const pega = Math.min(1, dt * (forca > 0.2 ? 8 : 16));
-        olhar[0] += (ax - olhar[0]) * pega;
-        olhar[1] += (ay - olhar[1]) * pega;
-      }
-    }
-
-    return {
-      dt,
-      t,
-      olhar: snap ? [0, 0] : olhar,
-      pupila,
-      piscar,
-      iris,
-      faixa,
-      cenaA: cenaDe,
-      cenaB: cenaPara,
-      mix,
-      offA: snap ? [0, 0] : offA,
-      offB: snap ? [0, 0] : offB,
-      escrita: snap ? 2 : escrita,
-      rato: [rato.sx, rato.sy],
-      ratoV: [rato.vx, rato.vy],
-      ratoF: snap ? 0 : forca,
-      papelY: snap ? paradaPara * 260 : papelY,
-      cortina,
-      snap,
-    };
+  if (!luz.pronta) {
+    luz.x = ax;
+    luz.y = ay;
+    luz.pronta = true;
+  }
+  const pega = Math.min(1, dt * (comMouse ? 14 : 2.2));
+  luz.x += (ax - luz.x) * pega;
+  luz.y += (ay - luz.y) * pega;
+  raiz.style.setProperty('--px', `${luz.x.toFixed(1)}px`);
+  raiz.style.setProperty('--py', `${luz.y.toFixed(1)}px`);
+  for (const l of linhas) {
+    const r = l.nome.getBoundingClientRect();
+    l.nome.style.setProperty('--lx', `${(luz.x - r.left).toFixed(1)}px`);
+    l.nome.style.setProperty('--ly', `${(luz.y - r.top).toFixed(1)}px`);
   }
 
-  function laco(agora) {
-    if (!rodando) return;
-    requestAnimationFrame(laco);
-    const real = (agora - anterior) / 1000;
-    anterior = agora;
-    if (real > 0.5) return; // voltou de outra aba
-    // O primeiro quadro pode vir com horário anterior ao do início: sem tempo negativo.
-    const dt = Math.max(0, Math.min(real, 1 / 30));
-    t += dt;
-    escrita = Math.min(2, escrita + dt / 2.2);
-
-    const alvoForca = agora - rato.ultimo < 1400 ? 1 : 0;
-    forca += (alvoForca - forca) * Math.min(1, dt * 5);
-
-    const a = Math.min(1, dt * 14);
-    const nx = rato.sx + (rato.x - rato.sx) * a;
-    const ny = rato.sy + (rato.y - rato.sy) * a;
-    rato.vx = (nx - rato.sx) / Math.max(dt, 1e-3);
-    rato.vy = (ny - rato.sy) / Math.max(dt, 1e-3);
-    rato.sx = nx;
-    rato.sy = ny;
-
-    motor.quadro(montarQuadro(dt, false));
-
-    // Se o aparelho não dá conta, troca partículas por fluidez.
-    amostras++;
-    if (real > 0.024) lentos++;
-    if (amostras >= 60) {
-      if (lentos / amostras > 0.4 && motor.visiveis > 5000) motor.reduzir();
-      amostras = 0;
-      lentos = 0;
-    }
+  // Só roda a cena que está à vista: a da janela, ou a da linha aberta na tela estreita.
+  const viva = linhas[largo.matches ? foco : aberta];
+  if (!viva) return;
+  if (viva.cena.ponteiro) {
+    const r = viva.alvoCena.getBoundingClientRect();
+    const dentro = comMouse && rato.x >= r.left && rato.x <= r.right && rato.y >= r.top && rato.y <= r.bottom;
+    viva.cena.ponteiro(rato.x - r.left, rato.y - r.top, dentro);
   }
-
-  function comecar() {
-    if (rodando) return;
-    rodando = true;
-    anterior = performance.now();
-    requestAnimationFrame(laco);
-  }
-  function parar() {
-    rodando = false;
-  }
-
-  // Movimento reduzido: um desenho parado por parada, sem física nem rastro.
-  function desenhoParado() {
-    motor.quadro(montarQuadro(0.016, true));
-  }
-
-  function aplicarPreferencia() {
-    if (reduzido.matches) {
-      parar();
-      raiz.classList.add('parado');
-      desenhoParado();
-    } else {
-      raiz.classList.remove('parado');
-      comecar();
-    }
-  }
-  reduzido.addEventListener('change', aplicarPreferencia);
-  aplicarPreferencia();
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) parar();
-    else if (!reduzido.matches) comecar();
-  });
-
-  let espera = 0;
-  addEventListener('resize', () => {
-    clearTimeout(espera);
-    espera = setTimeout(() => {
-      construir();
-      if (reduzido.matches) desenhoParado();
-    }, 180);
-  });
-
-  // Fontes mudam o tamanho dos blocos, e a tinta segue o layout.
-  document.fonts?.ready.then(() => {
-    construir();
-    if (reduzido.matches) desenhoParado();
-  });
-
-  canvas.addEventListener('webglcontextlost', (e) => {
-    e.preventDefault();
-    parar();
-    raiz.classList.add('sem-webgl');
-  });
+  viva.cena.quadro(dt, t);
 }
+
+function comecar() {
+  if (rodando || reduzido.matches || document.hidden) return;
+  rodando = true;
+  anterior = performance.now();
+  requestAnimationFrame(quadro);
+}
+
+// Movimento reduzido: a luz não passeia e cada cena mostra um quadro parado.
+function aplicarPreferencia() {
+  raiz.classList.toggle('parado', reduzido.matches);
+  if (reduzido.matches) {
+    rodando = false;
+    linhas.forEach(parada);
+  } else comecar();
+}
+reduzido.addEventListener('change', aplicarPreferencia);
+document.addEventListener('visibilitychange', () => (document.hidden ? (rodando = false) : comecar()));
+
+{
+  // Abre na linha do endereço, se houver.
+  const i = apps.findIndex((a) => a.id === location.hash.slice(1));
+  if (i >= 0) abrir(i, { rolar: !largo.matches });
+  else focar(0);
+}
+aplicarPreferencia();
