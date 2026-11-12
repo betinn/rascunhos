@@ -26,43 +26,6 @@
 //               Com mais de uma pessoa, aparecem botões para trocar.
 export const apps = [
   {
-    id: 'reino',
-    nome: 'Reino de Pedra',
-    url: 'https://reino.rascunhos.app',
-    plataforma: 'web',
-    cena: 'reino',
-    cor: '#ee9149',
-    corTinta: '#1b0e04',
-    legenda: 'Ilustração do mapa: a luz afasta a névoa.',
-    genero: 'MMO de estratégia medieval',
-    linha: 'Um mundo persistente, em tempo real, que continua andando com você offline.',
-    resumo:
-      'Sem turnos. Você dá a ordem e sai: as obras terminam, as tropas marcham e as defesas reagem com você offline. O diferencial é explorar de verdade um mapa grande, com riqueza escondida na névoa.',
-    nota: 'Feito para computador, com mouse e teclado. O mapa ao vivo é aberto, sem login. Para fundar um reino, é preciso pedir convite.',
-    botao: 'Ver o mundo ao vivo',
-    detalhe: {
-      titulo: 'Todo mundo aqui tem nome',
-      exemplos: [
-        {
-          titulo: 'Pessoas, não números',
-          texto: 'Cada pessoa tem nome, ofício e lugar. O relatório da batalha diz quem morreu.',
-        },
-        {
-          titulo: 'A névoa esconde a riqueza',
-          texto: 'Jazidas valiosas só aparecem para o prospector. Exploradores podem ser capturados.',
-        },
-        {
-          titulo: 'Tudo viaja pelo mapa',
-          texto: 'Recurso fica no local onde está. A carga anda à vista e pode ser roubada no caminho.',
-        },
-        {
-          titulo: 'Uma relíquia por reino',
-          texto: 'Escavadas em ruínas antigas, dão bônus a um local. E podem ser roubadas.',
-        },
-      ],
-    },
-  },
-  {
     id: 'glowup',
     nome: 'GlowUp',
     url: 'https://glowup.rascunhos.app',
@@ -129,39 +92,38 @@ export const apps = [
     },
   },
   {
-    id: 'gdsb',
-    nome: 'GDSB',
-    url: 'https://play.google.com/store/apps/details?id=gdsb.app',
-    plataforma: 'android',
-    loja: 'Google Play',
-    cena: 'gdsb',
-    cor: '#f27beb',
-    corTinta: '#060b24',
-    legenda: 'Ilustração: o cofre abre com a digital e tranca sozinho.',
-    genero: 'Gerenciador de senhas offline',
-    linha: 'Suas senhas num cofre cifrado, num arquivo que é seu. Sem conta e sem servidor.',
+    id: 'reino',
+    nome: 'Reino de Pedra',
+    url: 'https://reino.rascunhos.app',
+    plataforma: 'web',
+    cena: 'reino',
+    cor: '#ee9149',
+    corTinta: '#1b0e04',
+    legenda: 'Ilustração do mapa: a luz afasta a névoa.',
+    genero: 'MMO de estratégia medieval',
+    linha: 'Um mundo persistente, em tempo real, que continua andando com você offline.',
     resumo:
-      'O cofre é um arquivo .GDSBX que você escolhe onde guardar, cifrado no próprio aparelho com AES-256-GCM e uma senha mestra. O app não pede internet: não há conta, servidor, anúncio nem rastreamento.',
-    nota: 'Para Android, na Google Play.',
-    botao: 'Ver na Google Play',
+      'Sem turnos. Você dá a ordem e sai: as obras terminam, as tropas marcham e as defesas reagem com você offline. O diferencial é explorar de verdade um mapa grande, com riqueza escondida na névoa.',
+    nota: 'Feito para computador, com mouse e teclado. O mapa ao vivo é aberto, sem login. Para fundar um reino, é preciso pedir convite.',
+    botao: 'Ver o mundo ao vivo',
     detalhe: {
-      titulo: 'A chave fica com você',
+      titulo: 'Todo mundo aqui tem nome',
       exemplos: [
         {
-          titulo: 'Um arquivo que é seu',
-          texto: 'Guarde o cofre onde quiser, até numa pasta sincronizada do Drive ou do OneDrive. Ele só abre com a sua senha.',
+          titulo: 'Pessoas, não números',
+          texto: 'Cada pessoa tem nome, ofício e lugar. O relatório da batalha diz quem morreu.',
         },
         {
-          titulo: 'Backup a cada gravação',
-          texto: 'Antes de salvar, a versão anterior vai para uma área privada do app. Dá para restaurar num arquivo novo.',
+          titulo: 'A névoa esconde a riqueza',
+          texto: 'Jazidas valiosas só aparecem para o prospector. Exploradores podem ser capturados.',
         },
         {
-          titulo: 'Digital ou senha mestra',
-          texto: 'A biometria abre o último cofre, se você quiser. A senha mestra sempre funciona.',
+          titulo: 'Tudo viaja pelo mapa',
+          texto: 'Recurso fica no local onde está. A carga anda à vista e pode ser roubada no caminho.',
         },
         {
-          titulo: 'Tranca sozinho',
-          texto: 'Se você quiser, o cofre se fecha quando fica parado, e a senha copiada some da área de transferência.',
+          titulo: 'Uma relíquia por reino',
+          texto: 'Escavadas em ruínas antigas, dão bônus a um local. E podem ser roubadas.',
         },
       ],
     },
@@ -199,6 +161,44 @@ export const apps = [
         {
           titulo: 'Poderes',
           texto: 'Fantasma atravessa tudo, Escudo salva de uma batida e Tesoura corta a cauda. A maçã dourada some rápido.',
+        },
+      ],
+    },
+  },
+  {
+    id: 'gdsb',
+    nome: 'GDSB',
+    url: 'https://play.google.com/store/apps/details?id=gdsb.app',
+    plataforma: 'android',
+    loja: 'Google Play',
+    cena: 'gdsb',
+    cor: '#f27beb',
+    corTinta: '#060b24',
+    legenda: 'Ilustração: o cofre abre com a digital e tranca sozinho.',
+    genero: 'Gerenciador de senhas offline',
+    linha: 'Suas senhas num cofre cifrado, num arquivo que é seu. Sem conta e sem servidor.',
+    resumo:
+      'O cofre é um arquivo .GDSBX que você escolhe onde guardar, cifrado no próprio aparelho com AES-256-GCM e uma senha mestra. O app não pede internet: não há conta, servidor, anúncio nem rastreamento.',
+    nota: 'Para Android, na Google Play.',
+    botao: 'Ver na Google Play',
+    detalhe: {
+      titulo: 'A chave fica com você',
+      exemplos: [
+        {
+          titulo: 'Um arquivo que é seu',
+          texto: 'Guarde o cofre onde quiser, até numa pasta sincronizada do Drive ou do OneDrive. Ele só abre com a sua senha.',
+        },
+        {
+          titulo: 'Backup a cada gravação',
+          texto: 'Antes de salvar, a versão anterior vai para uma área privada do app. Dá para restaurar num arquivo novo.',
+        },
+        {
+          titulo: 'Digital ou senha mestra',
+          texto: 'A biometria abre o último cofre, se você quiser. A senha mestra sempre funciona.',
+        },
+        {
+          titulo: 'Tranca sozinho',
+          texto: 'Se você quiser, o cofre se fecha quando fica parado, e a senha copiada some da área de transferência.',
         },
       ],
     },
