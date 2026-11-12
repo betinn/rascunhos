@@ -37,8 +37,27 @@ uniform vec4 uOlhoA,uOlhoB; // centro da íris, raio, meia largura do olho
 uniform vec3 uLidA,uLidB;   // centro das pálpebras, altura de cima, altura de baixo
 uniform vec2 uOlhar;
 uniform float uPupila,uPiscar;
+// Cobras: as casas de até duas trilhas fechadas, uma depois da outra, e
+// (casas da trilha 0, casas da trilha 1, casas por segundo, -).
+uniform vec2 uTrilhaA[96],uTrilhaB[96];
+uniform vec4 uCobraA,uCobraB;
 out vec4 vEstado;
 ${NOISE}
+vec2 casa(bool emA,int i){return emA?uTrilhaA[i]:uTrilhaB[i];}
+// Partícula de cobra: x = trilha * 1000 + distância da cabeça, em casas.
+// A cobra anda pela trilha e a partícula fica num disco em volta do ponto dela.
+vec2 naCobra(vec4 a,bool emA){
+  vec4 cb=emA?uCobraA:uCobraB;
+  float k=floor(a.x/1000.);
+  float atras=a.x-k*1000.;
+  int n=int(k<.5?cb.x:cb.y);
+  int base=k<.5?0:int(cb.x);
+  float s=mod(uT*cb.z-atras,float(n));
+  int i=int(s);
+  vec2 p=mix(casa(emA,base+i),casa(emA,base+(i+1)%n),s-float(i));
+  float ang=aSemente.z*6.2832;
+  return p+vec2(cos(ang),sin(ang))*a.y;
+}
 vec2 curl(vec2 p){
   const float e=.35;
   float n=snoise(p);
@@ -50,7 +69,9 @@ void main(){
   vec4 b=texelFetch(uAlvos,ivec3(c,uCenaB),0);
   float s=aSemente.x;
   float m=smoothstep(s*.55,s*.55+.45,uMix);
-  vec2 alvo=mix(a.xy+uOffA,b.xy+uOffB,m);
+  vec2 pa=(a.w>9.5?naCobra(a,true):a.xy)+uOffA;
+  vec2 pb=(b.w>9.5?naCobra(b,false):b.xy)+uOffB;
+  vec2 alvo=mix(pa,pb,m);
   float tipo=m<.5?a.w:b.w;
   float fase=m<.5?a.z:b.z;
 
@@ -67,7 +88,7 @@ void main(){
     alvo+=vec2(sin(uT*.17+fase*40.),cos(uT*.13+fase*70.))*(22.+40.*aSemente.w);
   }else if(tipo>4.5&&tipo<5.5){ // linha da cortina
     alvo.x=uCortina;
-  }else if(tipo>5.5){
+  }else if(tipo>5.5&&tipo<9.5){
     vec4 ol=m<.5?uOlhoA:uOlhoB;
     vec3 la=m<.5?uLidA:uLidB;
     if(tipo<6.5){ // íris: as fibras encolhem e esticam com a pupila
@@ -92,7 +113,7 @@ void main(){
   vec2 p=aEstado.xy,v=aEstado.zw;
   float dt=uDt;
   // Na troca, só se solta quem muda de lugar: a palavra fica quieta quando o palco troca.
-  float muda=step(.5,distance(a.xy+uOffA,b.xy+uOffB)+abs(a.w-b.w));
+  float muda=step(.5,distance(pa,pb)+abs(a.w-b.w));
   float solto=4.*m*(1.-m)*muda;
   float folga=max(solto,1.-ativo);
   v+=curl(p*.0024+vec2(uT*.05,-uT*.03))*(uFluxo+folga*1500.)*dt;
@@ -112,6 +133,10 @@ void main(){
   if(tipo>4.5&&tipo<5.5&&solto<.02){p.x=uCortina;} // a linha da cortina não fica para trás nem treme
   vEstado=vec4(p,v);
 }`;
+
+/** Casas por trilha de cobra, somando as duas trilhas de uma cena (o tamanho de uTrilhaA). */
+export const CASAS_COBRA = 96;
+const TRILHA_VAZIA = new Float32Array(CASAS_COBRA * 2);
 
 const FS_NADA = `#version 300 es
 precision mediump float;out vec4 o;void main(){o=vec4(0.);}`;
@@ -156,7 +181,7 @@ void main(){
   }else if(tipo>2.5&&tipo<3.5){ // bruma cintila
     brilho*=.6+.4*sin(uT*.8+fase*50.);
   }
-  if((tipo>3.5&&tipo<4.5)||tipo>5.5){ // o que está na foto
+  if((tipo>3.5&&tipo<4.5)||(tipo>5.5&&tipo<9.5)){ // o que está na foto
     if(tipo>5.5&&tipo<6.5) base=uIris*cor.rgb;
     if(tipo>7.5&&tipo<8.5){ // brilho no olhar
       float o=sin(uT*1.7+fase*2.)*.5+.5;
@@ -516,6 +541,11 @@ export function criarTinta(canvas, { particulas, dprMax }) {
     gl.uniform1f(u.uRatoR, Math.max(70, Math.min(largura, altura) * 0.12));
     gl.uniform1f(u.uRatoF, q.ratoF);
     poeOlho(u);
+    for (const [m, nome] of [[ma, 'A'], [mb, 'B']]) {
+      const c = m.cobra;
+      if (u[`uTrilha${nome}[0]`]) gl.uniform2fv(u[`uTrilha${nome}[0]`], c ? c.casas : TRILHA_VAZIA);
+      gl.uniform4fv(u[`uCobra${nome}`], c ? c.info : [1, 1, 0, 0]);
+    }
     gl.uniform2f(u.uOlhar, q.olhar[0], q.olhar[1]);
     gl.uniform1f(u.uPupila, q.pupila);
 

@@ -167,4 +167,41 @@ export const apps = [
       ],
     },
   },
+  {
+    id: 'snakevs',
+    nome: 'Snake VS',
+    url: 'https://snakevs.rascunhos.app',
+    plataforma: 'web',
+    cena: 'snakevs',
+    genero: 'Jogo da cobrinha',
+    linha: 'A cobrinha de sempre, com muros, poderes e um duelo contra a CPU.',
+    botaoCurto: 'Jogar',
+    resumo:
+      'Deslize para virar, coma maçãs para crescer e não bata em nada. Simples de aprender, com visual retrô e movimento suave. No modo VS CPU, uma cobra rival disputa as mesmas maçãs.',
+    nota: 'Roda no navegador, no celular ou no computador, com toque, teclado ou controle. Na web, dá para salvar a pontuação num ranking, só com um apelido.',
+    botao: 'Jogar no navegador',
+    detalhe: {
+      rotulo: 'Os modos do Snake VS',
+      cena: 'snakevs-niveis',
+      titulo: 'Coma, cresça e não bata em nada',
+      exemplos: [
+        {
+          titulo: 'Clássico',
+          texto: 'A tela é aberta e a partida não tem fim. A cobra cresce sem parar, e o jogo acelera.',
+        },
+        {
+          titulo: 'Níveis',
+          texto: 'Cada nível novo traz muros e mais velocidade. Os primeiros são desenhados à mão.',
+        },
+        {
+          titulo: 'VS CPU',
+          texto: 'Uma cobra do computador disputa as maçãs com você e foge de becos sem saída.',
+        },
+        {
+          titulo: 'Poderes',
+          texto: 'Fantasma atravessa tudo, Escudo salva de uma batida e Tesoura corta a cauda. A maçã dourada some rápido.',
+        },
+      ],
+    },
+  },
 ];

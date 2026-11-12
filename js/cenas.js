@@ -9,7 +9,7 @@ const GIZ = [0.96, 0.95, 0.87];
 const FLUO = [0.84, 1.0, 0.24];
 
 // Tipos de partícula, lidos pelos shaders em tinta.js
-export const TIPO = { FIXA: 0, PULSO: 1, BRASA: 2, BRUMA: 3, CORTINA: 4, LINHA_CORTINA: 5, IRIS: 6, PALPEBRA: 7, BRILHO: 8, ESCLERA: 9 };
+export const TIPO = { FIXA: 0, PULSO: 1, BRASA: 2, BRUMA: 3, CORTINA: 4, LINHA_CORTINA: 5, IRIS: 6, PALPEBRA: 7, BRILHO: 8, ESCLERA: 9, COBRA: 10 };
 
 /** Spline de Catmull-Rom. */
 export function suavizar(pts, passos = 14) {
@@ -49,6 +49,7 @@ export class Desenho {
   constructor(meta = {}) {
     this.tracos = [];
     this.nuvens = [];
+    this.corpos = [];
     this.fasePadrao = [0, 1];
     this.meta = { quente: FLUO, papel: [0.039, 0.043, 0.035], grade: 1, halo: 1, tremido: 0.8, cortina: null, olho: null, ...meta };
   }
@@ -90,10 +91,32 @@ export class Desenho {
     return this;
   }
 
+  /**
+   * Corpo de cobra que anda por uma trilha (tipo COBRA). trilha: 0 ou 1. casas: comprimento.
+   * casa: tamanho da casa em px. raio0 e raio1: grossura na cabeça e na cauda, em px.
+   * cor0 e cor1: cor na cabeça e na cauda.
+   */
+  corpo(trilha, casas, o = {}) {
+    this.corpos.push({
+      trilha,
+      casas,
+      casa: o.casa ?? 20,
+      peso: o.peso ?? 1,
+      raio0: o.raio0 ?? 6,
+      raio1: o.raio1 ?? 4,
+      cor0: o.cor0 ?? GIZ,
+      cor1: o.cor1 ?? GIZ,
+      brilho: o.brilho ?? 1,
+    });
+    return this;
+  }
+
   /** Escreve N partículas em dois vetores de N*4 elementos. */
   escrever(N, pos, cor) {
     const pesoTracos = this.tracos.map((t) => t.total * t.peso);
-    const pesoTotal = pesoTracos.reduce((a, b) => a + b, 0) + this.nuvens.reduce((a, n) => a + n.peso, 0);
+    const pesoCorpos = this.corpos.map((c) => c.casas * c.casa * c.peso);
+    const pesoTotal =
+      pesoTracos.reduce((a, b) => a + b, 0) + pesoCorpos.reduce((a, b) => a + b, 0) + this.nuvens.reduce((a, n) => a + n.peso, 0);
     const k = N / pesoTotal;
     let i = 0;
     const poe = (x, y, fase, tipo, c, alfa) => {
@@ -127,6 +150,21 @@ export class Desenho {
         const nor = Math.hypot(dx, dy) || 1;
         const d = t.firme ? (Math.random() - 0.5) * 2.6 * t.sigma : gauss() * t.sigma;
         poe(a[0] + dx * f - (dy / nor) * d, a[1] + dy * f + (dx / nor) * d, t.fase0 + (t.fase1 - t.fase0) * u, t.tipo, t.cor, alfa);
+      }
+    });
+
+    this.corpos.forEach((c, ic) => {
+      const qtd = Math.max(2, Math.round(pesoCorpos[ic] * k));
+      const area = c.casas * c.casa * (c.raio0 + c.raio1);
+      const alfa = c.brilho / ((qtd / area) * 2.2);
+      const mistura = (u) => c.cor0.map((v, i) => v + (c.cor1[i] - v) * u);
+      for (let q = 0; q < qtd; q++) {
+        const u = (q + Math.random()) / qtd;
+        const raio = (c.raio0 + (c.raio1 - c.raio0) * u) * Math.sqrt(Math.random());
+        // A cabeça brilha mais que o resto.
+        const cabeca = 1 + 1.4 * Math.max(0, 1 - (u * c.casas) / 0.8);
+        const fase = this.fasePadrao[0] + (this.fasePadrao[1] - this.fasePadrao[0]) * u;
+        poe(c.trilha * 1000 + u * c.casas, raio, fase, TIPO.COBRA, mistura(u), alfa * cabeca);
       }
     });
 
@@ -791,6 +829,196 @@ function desenharDigital(d, r) {
 }
 
 // ---------------------------------------------------------------------------
+// Snake VS: o tabuleiro do jogo, com cobras que andam de verdade pela tela.
+// As cores vêm da paleta do próprio jogo.
+// ---------------------------------------------------------------------------
+const VERDE = [[0.42, 0.94, 0.54], [0.12, 0.62, 0.33]];
+const VERMELHA = [[1.0, 0.3, 0.48], [0.62, 0.1, 0.3]];
+const MACA = [1.0, 0.3, 0.37];
+const DOURADA = [1.0, 0.82, 0.25];
+const MOLDURA = [0.32, 0.38, 0.72];
+const MURO = [0.3, 0.34, 0.57];
+const MURO_LUZ = [0.45, 0.51, 0.85];
+const PODERES = [
+  [0.31, 0.76, 0.97], // lento
+  [0.7, 0.53, 1.0], // fantasma
+  [1.0, 0.82, 0.25], // pontos x2
+  [1.0, 0.62, 0.26], // tesoura
+  [0.36, 0.55, 1.0], // escudo
+];
+const CASAS_TRILHA = 96; // o mesmo CASAS_COBRA do motor
+const VS = [
+  ['10001', '10001', '10001', '10001', '10001', '01010', '00100'],
+  ['01111', '10000', '10000', '01110', '00001', '00001', '11110'],
+];
+
+/** Um tabuleiro de casas inteiras, centrado na caixa. O lado menor tem `menor` casas. */
+function tabuleiro(r, menor) {
+  const c = Math.max(Math.min(r.width, r.height) / menor, Math.max(r.width, r.height) / 20);
+  const W = Math.max(8, Math.floor(r.width / c));
+  const H = Math.max(8, Math.floor(r.height / c));
+  const x0 = r.left + (r.width - W * c) / 2;
+  const y0 = r.top + (r.height - H * c) / 2;
+  return { c, W, H, x0, y0, centro: (i, j) => [x0 + (i + 0.5) * c, y0 + (j + 0.5) * c] };
+}
+
+/** As casas de uma trilha fechada que passa pelos cantos, em linha reta de um a outro. */
+function trilhaPorCantos(cantos) {
+  const casas = [];
+  for (let k = 0; k < cantos.length; k++) {
+    const [i0, j0] = cantos[k];
+    const [i1, j1] = cantos[(k + 1) % cantos.length];
+    const n = Math.abs(i1 - i0) + Math.abs(j1 - j0);
+    for (let t = 0; t < n; t++) casas.push([i0 + (Math.sign(i1 - i0) * t), j0 + (Math.sign(j1 - j0) * t)]);
+  }
+  return casas;
+}
+
+/** Entrega as trilhas ao motor e devolve quantas casas cada uma tem. */
+function poeTrilhas(d, tab, trilhas, velocidade) {
+  const casas = new Float32Array(CASAS_TRILHA * 2);
+  let i = 0;
+  for (const t of trilhas) for (const [a, b] of t) {
+    const [x, y] = tab.centro(a, b);
+    casas[i++] = x;
+    casas[i++] = y;
+  }
+  d.meta.cobra = { casas, info: [trilhas[0].length, trilhas[1]?.length ?? 1, velocidade, 0] };
+}
+
+function cobra(d, tab, trilha, casas, cores, { mini = false } = {}) {
+  d.corpo(trilha, casas, {
+    casa: tab.c,
+    peso: mini ? 7 : 9,
+    raio0: tab.c * 0.4,
+    raio1: tab.c * 0.24,
+    cor0: cores[0],
+    cor1: cores[1],
+    brilho: 0.62,
+  });
+}
+
+function moldura(d, tab, brilho = 0.6) {
+  const { x0, y0, c, W, H } = tab;
+  const raio = c * 0.4;
+  const a = (cx, cy, a0) => arco(cx, cy, raio, raio, a0, a0 + 90, 10);
+  const borda = [
+    ...a(x0 + W * c - raio, y0 + raio, -90),
+    ...a(x0 + W * c - raio, y0 + H * c - raio, 0),
+    ...a(x0 + raio, y0 + H * c - raio, 90),
+    ...a(x0 + raio, y0 + raio, 180),
+  ];
+  borda.push(borda[0]);
+  d.traco(borda, { peso: 6, sigma: 0.7, firme: true, cor: MOLDURA, brilho });
+}
+
+function maca(d, tab, i, j, cor = MACA) {
+  const [x, y] = tab.centro(i, j);
+  const r = tab.c * 0.3;
+  d.traco(arco(x, y, r, r, 0, 360, 30), { peso: 20, sigma: Math.max(0.6, r * 0.18), cor, brilho: 1.1, tipo: TIPO.PULSO });
+  d.traco([[x, y - r * 0.9], [x + r * 0.6, y - r * 1.6]], { peso: 14, sigma: 0.7, cor: VERDE[0], brilho: 0.8 });
+}
+
+/** Um bloco cheio de casas, como os muros do modo Níveis. */
+function bloco(d, tab, i, j, w, h) {
+  const { c } = tab;
+  const [x, y] = [tab.x0 + i * c + c * 0.08, tab.y0 + j * c + c * 0.08];
+  const [bw, bh] = [w * c - c * 0.16, h * c - c * 0.16];
+  d.traco([[x, y], [x + bw, y], [x + bw, y + bh], [x, y + bh], [x, y]], { peso: 8, sigma: 0.6, firme: true, cor: MURO_LUZ, brilho: 0.7 });
+  d.nuvem(() => [x + Math.random() * bw, y + Math.random() * bh], { peso: bw * bh * 0.05, cor: MURO, brilho: 0.6, alfa: 0.14 });
+}
+
+/** VS em letra de pixel, como a placa do duelo no jogo. */
+function placaVs(d, cx, cy, px, cor) {
+  const largura = 11 * px;
+  VS.forEach((letra, l) => {
+    letra.forEach((linha, j) => {
+      [...linha].forEach((v, i) => {
+        if (v !== '1') return;
+        const x = cx - largura / 2 + (l * 6 + i) * px;
+        const y = cy - 3.5 * px + j * px;
+        d.nuvem(() => [x + Math.random() * px * 0.86, y + Math.random() * px * 0.86], { peso: px * px * 0.5, cor, brilho: 0.9, alfa: 0.3 });
+      });
+    });
+  });
+}
+
+/** O duelo: a sua cobra por fora, a da CPU por dentro, em sentido contrário. */
+function desenharDuelo(d, r, { mini = false } = {}) {
+  const tab = tabuleiro(r, 12);
+  const { W, H } = tab;
+  const fora = trilhaPorCantos([[1, 1], [W - 2, 1], [W - 2, H - 2], [1, H - 2]]);
+  const dentro = trilhaPorCantos([[3, 3], [3, H - 4], [W - 4, H - 4], [W - 4, 3]]);
+  poeTrilhas(d, tab, [fora, dentro], 3.2);
+  moldura(d, tab);
+  cobra(d, tab, 0, Math.round(fora.length * 0.36), VERDE, { mini });
+  cobra(d, tab, 1, Math.round(dentro.length * 0.4), VERMELHA, { mini });
+  maca(d, tab, Math.floor(W / 2), 2);
+  maca(d, tab, 2, Math.floor(H / 2), DOURADA);
+  if (!mini && H - 8 >= 4 && W - 8 >= 6) {
+    const [cx, cy] = [tab.x0 + (W * tab.c) / 2, tab.y0 + (H * tab.c) / 2];
+    placaVs(d, cx, cy, Math.min(((H - 8) * tab.c) / 9, ((W - 8) * tab.c) / 13), VERMELHA[0]);
+  }
+}
+
+/** Níveis: a cobra serpenteia entre muros, com os poderes pelo caminho. */
+function desenharNiveis(d, r, { mini = false } = {}) {
+  const tab = tabuleiro(r, 12);
+  const { W, H } = tab;
+  let passo = 3;
+  let cantos;
+  let trilha;
+  do {
+    cantos = [[1, 1]];
+    let y = 1;
+    let direita = true;
+    while (y + passo <= H - 2) {
+      cantos.push([direita ? W - 2 : 3, y]);
+      y += passo;
+      cantos.push([direita ? W - 2 : 3, y]);
+      direita = !direita;
+    }
+    // Volta pela última linha e sobe pela coluna da esquerda, sem repetir caminho.
+    const x = direita ? 3 : W - 2;
+    if (y < H - 2) cantos.push([x, H - 2]);
+    cantos.push([1, H - 2]);
+    trilha = trilhaPorCantos(cantos);
+    passo++;
+  } while (trilha.length > CASAS_TRILHA);
+  poeTrilhas(d, tab, [trilha], 3.6);
+  moldura(d, tab, 0.5);
+  cobra(d, tab, 0, Math.round(trilha.length * 0.3), VERDE, { mini });
+
+  // Muros, poderes e maçãs nas faixas entre uma passada e outra, fora do caminho.
+  let item = 0;
+  let faixa = 0;
+  for (let k = 0; k + 1 < cantos.length; k++) {
+    const [xa, y] = cantos[k];
+    const [xb, yProx] = cantos[k + 1];
+    if (xa !== xb || xa === 1 || yProx - y < 3) continue;
+    for (let x = 5; x <= W - 5; x++) {
+      const vez = (x + faixa) % 3;
+      if (vez === 0) bloco(d, tab, x, y + 1, 1, yProx - y - 1);
+      else if (vez === 2) {
+        const linha = y + 1 + ((x + faixa) % 2) * (yProx - y - 2);
+        if (item % 3 === 2) maca(d, tab, x, linha, item % 2 ? DOURADA : MACA);
+        else poder(d, tab, x, linha, PODERES[item % PODERES.length], { mini });
+        item++;
+      }
+    }
+    faixa++;
+  }
+}
+
+function poder(d, tab, i, j, cor, { mini = false } = {}) {
+  const [cx, cy] = tab.centro(i, j);
+  const rr = tab.c * 0.28;
+  const f = Math.random();
+  d.traco(arco(cx, cy, rr, rr, 0, 360, 28), { peso: 18, sigma: Math.max(0.6, rr * 0.2), cor, brilho: 1.1, tipo: TIPO.PULSO, fase0: f, fase1: f + 0.2 });
+  if (!mini) d.nuvem(() => [cx + gauss() * rr * 0.9, cy + gauss() * rr * 0.9], { peso: rr * 6, cor, brilho: 0.5, alfa: 0.12, tipo: TIPO.BRUMA });
+}
+
+// ---------------------------------------------------------------------------
 // Rabisco: a cena de quem ainda não tem desenho próprio.
 // ---------------------------------------------------------------------------
 function desenharRabisco(d, r, { mini = false } = {}) {
@@ -813,6 +1041,8 @@ const CENA = {
   'glowup-luz': { meta: { quente: SEGURANCA, papel: [0.043, 0.043, 0.047], grade: 0, halo: 0.75 }, desenhar: desenharLuz },
   gdsb: { meta: { quente: ROSA, papel: [0.026, 0.033, 0.07], grade: 0.1, halo: 0.8 }, desenhar: desenharCofre },
   'gdsb-digital': { meta: { quente: ROSA, papel: [0.026, 0.033, 0.07], grade: 0.06, halo: 0.75 }, desenhar: desenharDigital },
+  snakevs: { meta: { quente: VERDE[0], papel: [0.035, 0.04, 0.085], grade: 0.12, halo: 0.8 }, desenhar: desenharDuelo },
+  'snakevs-niveis': { meta: { quente: VERDE[0], papel: [0.035, 0.04, 0.085], grade: 0.08, halo: 0.75 }, desenhar: desenharNiveis },
   rabisco: { meta: { quente: FLUO, papel: [0.039, 0.043, 0.035], grade: 0.8, halo: 0.6 }, desenhar: desenharRabisco },
 };
 

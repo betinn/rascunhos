@@ -81,5 +81,6 @@ Ainda não há anúncios. O lugar reservado para eles é a parada final, marcada
 
 ## Licenças
 
-Fontes Instrument Sans, Instrument Serif e Cinzel sob SIL Open Font License, com as licenças em
-[`assets/fonts/`](assets/fonts/). Capturas de tela do GlowUp vêm do repositório dele, sob MIT.
+Fontes Instrument Sans, Instrument Serif, Cinzel e Silkscreen sob SIL Open Font License, com as
+licenças em [`assets/fonts/`](assets/fonts/). As fotos do GlowUp mostram um rosto gerado por IA, editado
+no próprio GlowUp.

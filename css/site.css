@@ -12,6 +12,12 @@
   font-display: swap;
 }
 @font-face {
+  font-family: Silkscreen;
+  src: url("../assets/fonts/silkscreen-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
   font-family: Cinzel;
   src: url("../assets/fonts/cinzel-latin-700-normal.woff2") format("woff2");
   font-weight: 700;
@@ -123,6 +129,30 @@ a {
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
 }
 .app-gdsb .detalhe-titulo {
+  font-family: var(--texto);
+  letter-spacing: -0.01em;
+}
+/* Snake VS: o verde da cobra, a letra de pixel do jogo e o botão verde de ação principal. */
+.app-snakevs {
+  --cor-app: #6cf08a;
+  --cor-app-tinta: #0b2615;
+  --raio-app: 10px;
+  --fonte-nome: Silkscreen, var(--mono);
+  --escala-nome: 0.84;
+}
+.app-snakevs .app-nome {
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.app-snakevs .app-botao {
+  background: #2ecc71;
+  color: #0b2615;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 0 #1e9e55;
+}
+.app-snakevs .detalhe-titulo {
   font-family: var(--texto);
   letter-spacing: -0.01em;
 }
@@ -525,6 +555,11 @@ a {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.16em;
+}
+.app-snakevs .indice-nome {
+  font-size: 16px;
+  font-weight: 400;
+  text-transform: uppercase;
 }
 .indice-plataforma {
   flex: none;
