@@ -66,6 +66,12 @@ A página é preta, com o índice das apps em letras grandes e apagadas.
   quadro parado.
 - **Sem JavaScript:** sobram os links para as apps.
 
+## Cache
+
+Os arquivos não têm hash no nome, então o servidor manda `Cache-Control: no-cache`: o navegador guarda,
+mas pergunta antes de reusar, e o deploy aparece na visita seguinte. O exemplo está em
+[`deploy/Caddyfile`](deploy/Caddyfile).
+
 ## Anúncios
 
 Ainda não há anúncios. O lugar reservado para eles é depois do índice, marcado com um comentário no

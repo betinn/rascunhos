@@ -1,0 +1,14 @@
+# Central site: static hosting example for Caddy 2.
+# Caddy obtains and renews the HTTPS certificate on its own.
+# Copy index.html, css/, js/ and assets/ to the root below. The server only delivers files.
+#
+# File names have no hash, so the browser must ask the server on every visit.
+# "no-cache" does not mean "do not store": the browser keeps the file but revalidates it with the ETag.
+# If nothing changed the answer is a small 304; after a deploy the new file shows up on the next visit.
+# Without this header the browser decides alone how long to reuse a file, and phones keep old pages for hours.
+
+example.com {
+	root * /srv/site
+	file_server
+	header Cache-Control "no-cache"
+}
