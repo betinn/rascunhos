@@ -6,9 +6,20 @@
 # "no-cache" does not mean "do not store": the browser keeps the file but revalidates it with the ETag.
 # If nothing changed the answer is a small 304; after a deploy the new file shows up on the next visit.
 # Without this header the browser decides alone how long to reuse a file, and phones keep old pages for hours.
+#
+# /saida counts clicks on the buttons that lead to each app. The page sends a short POST /saida?app=<id>
+# before leaving; the server only answers 204 and the count comes from the access log. No third party.
 
 example.com {
-	root * /srv/site
-	file_server
+	handle /saida {
+		request_body {
+			max_size 1KB
+		}
+		respond 204
+	}
+	handle {
+		root * /srv/site
+		file_server
+	}
 	header Cache-Control "no-cache"
 }
