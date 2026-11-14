@@ -46,7 +46,7 @@ function htmlLinha(a, i) {
         <div class="painel-dentro">
           <div class="painel-cena"></div>
           <p class="painel-resumo">${a.resumo}</p>
-          <a class="botao" href="${a.url}"${fora}><span>${a.botao}${aviso}</span> ${seta}</a>
+          <a class="botao" href="${a.url}" data-app="${a.id}"${fora}><span>${a.botao}${aviso}</span> ${seta}</a>
           ${a.nota ? `<p class="painel-nota">${a.nota}</p>` : ''}
           ${
             d
@@ -129,9 +129,11 @@ function focar(i) {
     if (a.loja) janela.link.target = '_blank';
     else janela.link.removeAttribute('target');
     janela.link.rel = a.loja ? 'noopener' : '';
+    janela.link.dataset.app = a.id;
   } else {
     janela.link.textContent = '';
     janela.link.removeAttribute('href');
+    delete janela.link.dataset.app;
   }
   janela.tipo.textContent = a ? tipo(a) : '';
   janela.linha.textContent = (a || PROXIMO).linha;
@@ -192,6 +194,23 @@ addEventListener('hashchange', () => {
   const i = apps.findIndex((a) => a.id === location.hash.slice(1));
   if (i >= 0 && i !== aberta) abrir(i);
 });
+
+// ---- Saídas: quantas pessoas seguem para cada app ----------------------------------
+// O clique num link de app manda um sinal curto ao próprio servidor antes de a página sair.
+// O servidor só responde 204; a contagem sai do log de acesso. Nada vai para terceiros.
+function saida(e) {
+  if (e.type === 'auxclick' && e.button !== 1) return; // auxclick só conta o botão do meio
+  const a = e.target.closest('a[data-app][href]');
+  if (!a) return;
+  const url = `/saida?app=${encodeURIComponent(a.dataset.app)}`;
+  try {
+    if (!navigator.sendBeacon?.(url)) fetch(url, { method: 'POST', keepalive: true }).catch(() => {});
+  } catch {
+    // contar o clique nunca pode atrapalhar a ida para a app
+  }
+}
+document.addEventListener('click', saida);
+document.addEventListener('auxclick', saida);
 
 // ---- A luz: o ponteiro acende os nomes por onde passa -------------------------------
 const rato = { x: 0, y: 0, ultimo: -1e9 };
