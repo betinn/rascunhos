@@ -203,4 +203,41 @@ export const apps = [
       ],
     },
   },
+  {
+    id: 'elo',
+    nome: 'Meu ELO',
+    url: 'https://meuelo.app',
+    plataforma: 'web',
+    cena: 'elo',
+    cor: '#d48995',
+    corTinta: '#2f1117',
+    legenda: 'Ilustração: um agendamento entra na agenda e sai ao ser cancelado.',
+    genero: 'Agenda e gestão para beleza e estética',
+    linha: 'Seus clientes marcam sozinhos pelo link. Você só atende.',
+    resumo:
+      'A agenda da equipe inteira, um link de agendamento aberto 24 horas, pacotes, pagamentos e o fechamento do caixa. E um calendário de conteúdo que lê a agenda e sugere o que postar antes do horário vazio.',
+    nota: 'Este já saiu do rascunho: está no ar, com clientes. Serve ao salão com equipe e a quem atende sozinha.',
+    botao: 'Conhecer o ELO',
+    detalhe: {
+      titulo: 'Sem caderno, sem planilha',
+      exemplos: [
+        {
+          titulo: 'Agenda',
+          texto: 'O dia de toda a equipe numa tela, com os pedidos aguardando aceite e os encaixes.',
+        },
+        {
+          titulo: 'Link de agendamento',
+          texto: 'Vai na bio e no WhatsApp. A cliente escolhe serviço, profissional, dia e hora, e o horário cai na agenda.',
+        },
+        {
+          titulo: 'Gestão',
+          texto: 'Pacotes com o saldo de cada cliente, pagamento em parte agora e parte depois, e o caixa fechado sem anotar.',
+        },
+        {
+          titulo: 'Conteúdo',
+          texto: 'Sugere o que postar e em que dia, com roteiro e legenda prontos para gravar.',
+        },
+      ],
+    },
+  },
 ];
