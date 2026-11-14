@@ -1,0 +1,58 @@
+# Publishes the central site when a pull request from a deploy/* branch is merged into main.
+# The site has no build step: it only packs the static files and sends them over SSH.
+# Server address, key and host fingerprint are repository secrets (VM_HOST, VM_SSH_KEY, VM_KNOWN_HOSTS).
+# On the server the key can only hand over the package: the site folder is swapped in one go, the new page is
+# checked and, if it does not answer, the previous version comes back.
+name: deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'deploy/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          persist-credentials: false
+
+      - name: Build package
+        run: |
+          set -euo pipefail
+          # Only what the site serves. The root folder of the package is dropped on extraction.
+          mkdir site
+          cp -r index.html css js assets site/
+          echo "${GITHUB_SHA::7} (PR #${{ github.event.pull_request.number }})" > site/VERSAO
+          tar -czf site.tar.gz site
+          ls -lh site.tar.gz
+
+      - name: Send to the server
+        env:
+          VM_HOST: ${{ secrets.VM_HOST }}
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+          VM_KNOWN_HOSTS: ${{ secrets.VM_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VM_SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The key only accepts the site's package on standard input.
+          ssh -i ~/.ssh/deploy -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ServerAliveInterval=30 "deploy@$VM_HOST" < site.tar.gz
+          rm -f ~/.ssh/deploy
