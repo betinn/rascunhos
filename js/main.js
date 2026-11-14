@@ -3,10 +3,11 @@ import { cenaReino } from './cenas/reino.js';
 import { cenaGlowup } from './cenas/glowup.js';
 import { cenaGdsb } from './cenas/gdsb.js';
 import { cenaSnake } from './cenas/snakevs.js';
+import { cenaElo } from './cenas/elo.js';
 import { cenaRabisco } from './cenas/rabisco.js';
 
 // As cenas vivas, pelo nome usado em apps.js. Sem cena própria, a app usa o rabisco.
-const CENAS = { reino: cenaReino, glowup: cenaGlowup, gdsb: cenaGdsb, snakevs: cenaSnake, rabisco: cenaRabisco };
+const CENAS = { reino: cenaReino, glowup: cenaGlowup, gdsb: cenaGdsb, snakevs: cenaSnake, elo: cenaElo, rabisco: cenaRabisco };
 
 const raiz = document.documentElement;
 const reduzido = matchMedia('(prefers-reduced-motion: reduce)');

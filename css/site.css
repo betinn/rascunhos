@@ -918,6 +918,312 @@ button {
   }
 }
 
+/* ---- Cena do ELO: o agendamento entra e sai da agenda ------------------------------ */
+.cena-elo {
+  background: #1f1411;
+}
+.elo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  padding: clamp(16px, 5%, 28px);
+  line-height: 1.25;
+  color: #f2e9d8;
+  user-select: none;
+}
+.elo-topo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7em;
+}
+.elo-marca {
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: #fdfbf7;
+}
+.elo-titulo {
+  font-size: 1.3em;
+  color: #f2e9d8;
+}
+.elo-semana {
+  margin-left: auto;
+  padding: 0.25em 0.8em;
+  border-radius: 999px;
+  border: 1px solid #5c4840;
+  font-size: 0.78em;
+  color: #d6c1b0;
+}
+.elo-grade {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 0.7em 0.7em 0.7em 0.2em;
+  border-radius: 14px;
+  border: 1px solid #45342f;
+  background: #2f221e;
+}
+.elo-dias {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 2.4em repeat(6, minmax(0, 1fr));
+  padding-bottom: 0.5em;
+  font-size: 0.74em;
+  text-align: center;
+  color: #b79f90;
+}
+.elo-dias span {
+  transition: color 0.3s;
+}
+.elo-dias .aceso {
+  color: #e7b5bc;
+}
+.elo-horas {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.66em;
+  color: #937a6d;
+}
+.elo-horas span {
+  flex: 1;
+  translate: 0 -0.55em;
+  text-align: right;
+  padding-right: 0.6em;
+}
+.elo-celas {
+  position: relative;
+  border-left: 1px solid #45342f;
+  background:
+    repeating-linear-gradient(to bottom, #45342f 0 1px, transparent 1px var(--lin, 40px)),
+    repeating-linear-gradient(to right, rgb(69 52 47 / 0.55) 0 1px, transparent 1px var(--col, 60px));
+}
+.elo-coluna {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgb(212 137 149 / 0), rgb(212 137 149 / 0.22) 45%, rgb(212 137 149 / 0));
+  opacity: 0;
+}
+.elo-ag,
+.elo-voo {
+  position: absolute;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0.35em 0.45em;
+  border-radius: 7px;
+  border-left: 3px solid #80836d;
+  background: #3a2b26;
+  font-size: 0.62em;
+  line-height: 1.2;
+}
+.elo-ag b,
+.elo-voo b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: #f2e9d8;
+}
+.elo-ag span,
+.elo-voo span span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #b79f90;
+}
+.elo-rodape {
+  display: flex;
+  justify-content: flex-end;
+}
+.elo-novo,
+.elo-agendar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45em;
+  padding: 0.75em 1.3em;
+  border-radius: 999px;
+  background: #d48995;
+  font-weight: 500;
+  color: #2f1117;
+}
+.elo-novo i {
+  font-style: normal;
+  font-size: 1.2em;
+  line-height: 1;
+}
+.elo-veu {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+}
+.elo-folha {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  padding: 0.8em clamp(16px, 6%, 30px) clamp(18px, 6%, 30px);
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid #5c4840;
+  background: #3a2b26;
+  box-shadow: 0 -18px 40px rgb(0 0 0 / 0.35);
+  visibility: hidden;
+}
+.elo-alca {
+  align-self: center;
+  width: 2.6em;
+  height: 4px;
+  border-radius: 4px;
+  background: #5c4840;
+}
+.elo-folha-titulo {
+  margin: 0 0 0.2em;
+  font-size: 1.2em;
+}
+.elo-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  min-height: 3.3em;
+  padding: 0.5em 0.9em;
+  border-radius: 10px;
+  border: 1px solid #5c4840;
+  background: #2f221e;
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.elo-campo small {
+  font-size: 0.7em;
+  color: #b79f90;
+}
+.elo-campo span {
+  min-height: 1.25em;
+}
+.elo-campo.em-foco {
+  border-color: #d48995;
+  box-shadow: 0 0 0 3px rgb(212 137 149 / 0.2);
+}
+.elo-campo.em-foco span::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: #e7b5bc;
+  animation: elo-cursor 0.9s steps(1) infinite;
+}
+@keyframes elo-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+.elo-agendar {
+  margin-top: 0.3em;
+}
+.elo-voo {
+  z-index: 2;
+  visibility: hidden;
+  transform-origin: center;
+}
+.elo-voo > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.35em 0.45em;
+}
+.elo-voo .elo-voo-botao {
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6em;
+  font-weight: 500;
+  color: #2f1117;
+}
+.elo-voo-cancelado b {
+  color: #feb094;
+  text-decoration: line-through;
+}
+.elo-balao {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: 0.8em 0.9em;
+  border-radius: 12px;
+  border: 1px solid #5c4840;
+  background: #3a2b26;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.5);
+  font-size: 0.82em;
+  white-space: nowrap;
+  visibility: hidden;
+  transform-origin: center bottom;
+}
+.elo-balao b {
+  font-weight: 500;
+}
+.elo-balao > span:not(.elo-cancelar) {
+  color: #d6c1b0;
+}
+.elo-cancelar {
+  margin-top: 0.4em;
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  border: 1px solid #db5c2f;
+  text-align: center;
+  color: #feb094;
+}
+.elo-aviso {
+  position: absolute;
+  z-index: 4;
+  top: clamp(14px, 4%, 24px);
+  left: 50%;
+  padding: 0.5em 1.1em;
+  border-radius: 999px;
+  border: 1px solid #508f75;
+  background: #1a3228;
+  font-size: 0.82em;
+  white-space: nowrap;
+  color: #a4d2bd;
+  opacity: 0;
+}
+.elo-aviso.perigo {
+  border-color: #db5c2f;
+  background: #5b1907;
+  color: #feb094;
+}
+.elo-dedo {
+  position: absolute;
+  z-index: 5;
+  left: -16px;
+  top: -16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 0.9);
+  background: rgb(255 255 255 / 0.22);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.4);
+  pointer-events: none;
+}
+.elo-dedo i {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  opacity: var(--anel-op, 0);
+  scale: calc(1 + var(--anel, 0) * 1.6);
+}
+
 .sem-script {
   grid-column: 1 / -1;
   margin: 0;
