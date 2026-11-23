@@ -211,31 +211,55 @@ export const apps = [
     cena: 'elo',
     cor: '#d48995',
     corTinta: '#2f1117',
-    legenda: 'Ilustração: um agendamento entra na agenda e sai ao ser cancelado.',
-    genero: 'Agenda e gestão para beleza e estética',
-    linha: 'Seus clientes marcam sozinhos pelo link. Você só atende.',
+    legenda: 'Ilustração: a Lia bloqueia a tarde, fecha o dia em lote e soma o mês. Nomes e números inventados.',
+    genero: 'Agenda e gestão para beleza e estética, com a Lia',
+    linha: 'Você pede do seu jeito. A Lia mostra como fica e só faz depois do seu toque.',
     resumo:
-      'A agenda da equipe inteira, um link de agendamento aberto 24 horas, pacotes, pagamentos e o fechamento do caixa. E um calendário de conteúdo que lê a agenda e sugere o que postar antes do horário vazio.',
-    nota: 'Este já saiu do rascunho: está no ar, com clientes. Serve ao salão com equipe e a quem atende sozinha.',
+      'A agenda da equipe inteira, um link de agendamento aberto 24 horas, pacotes, pagamentos e o fechamento do caixa. E, morando dentro de tudo isso, a Lia: a assistente que lê o ELO com você, responde com os seus números e faz o trabalho chato numa frase. Bloquear a sexta, remarcar a cliente, registrar o pix, fechar o dia inteiro de uma vez.',
+    nota: 'Este já saiu do rascunho: está no ar, com clientes. Serve ao salão com equipe e a quem atende sozinha. A Lia só vê e só muda o que o plano e o perfil de acesso de cada pessoa deixam.',
     botao: 'Conhecer o ELO',
     detalhe: {
-      titulo: 'Sem caderno, sem planilha',
+      titulo: 'A Lia faz. Você só confirma.',
       exemplos: [
         {
-          titulo: 'Agenda',
-          texto: 'O dia de toda a equipe numa tela, com os pedidos aguardando aceite e os encaixes.',
+          titulo: 'Peça do seu jeito',
+          texto: '"Não vou trabalhar dia 21", "a Claudia pagou no pix", "me chama de Bia". Ela entende, e quando não entende, diz o que entendeu e pergunta.',
         },
         {
-          titulo: 'Link de agendamento',
-          texto: 'Vai na bio e no WhatsApp. A cliente escolhe serviço, profissional, dia e hora, e o horário cai na agenda.',
+          titulo: 'Mostra o que está fazendo',
+          texto: 'Embaixo do nome dela: "Lendo…", "Olhando a agenda de sexta", "Somando". O rosto muda junto com cada etapa.',
         },
         {
-          titulo: 'Gestão',
-          texto: 'Pacotes com o saldo de cada cliente, pagamento em parte agora e parte depois, e o caixa fechado sem anotar.',
+          titulo: 'Lê o ELO com você',
+          texto: 'Agenda, horários livres, pendências, clientes, pacotes, equipe, divulgação e conteúdo. Responde com o que achou, sem inventar caminho nem número.',
+        },
+        {
+          titulo: 'Responde com os seus números',
+          texto: 'Fechamento do dia, o que falta receber, faturado, ticket médio e taxa de realização, já somados. Aniversariantes do mês e quem sumiu também.',
+        },
+        {
+          titulo: 'Nada muda sem o seu toque',
+          texto: 'Cada mudança vira um cartão com dia, hora e nome por extenso. Só grava quando você confirma, pelo mesmo caminho da tela, e fica registrado que veio da Lia.',
+        },
+        {
+          titulo: 'Desfazer até fechar o chat',
+          texto: 'O que tem volta ganha o botão Desfazer. O que não tem, o cartão avisa antes de você confirmar.',
+        },
+        {
+          titulo: 'Em lote, numa frase',
+          texto: '"Passa todos de hoje para amanhã." Até 20 mudanças num cartão só, e ela marca cada linha conforme faz.',
+        },
+        {
+          titulo: 'Agenda, dinheiro e cadastro',
+          texto: 'Bloqueia o dia, lança, remarca, cancela e aceita pedidos. Registra pagamento à vista, parcelado ou no crediário, vende pacote, muda preço e horário de atendimento.',
+        },
+        {
+          titulo: 'O resto do ELO',
+          texto: 'O link vai na bio e no WhatsApp, e o horário cai na agenda. Pacotes com saldo por cliente, caixa fechado sem anotar.',
         },
         {
           titulo: 'Conteúdo',
-          texto: 'Sugere o que postar e em que dia, com roteiro e legenda prontos para gravar.',
+          texto: 'Lê a agenda e sugere o que postar antes do horário vazio, com roteiro e legenda prontos para gravar.',
         },
       ],
     },
