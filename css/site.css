@@ -918,9 +918,33 @@ button {
   }
 }
 
-/* ---- Cena do ELO: o agendamento entra e sai da agenda ------------------------------ */
+/* ---- Cena do ELO: um dia com a Lia ------------------------------------------------- */
 .cena-elo {
-  background: #1f1411;
+  --e-fundo: #1f1411;
+  --e-sup: #2f221e;
+  --e-sup-forte: #3a2b26;
+  --e-fio: #45342f;
+  --e-fio-forte: #5c4840;
+  --e-tinta: #f2e9d8;
+  --e-tinta-suave: #d6c1b0;
+  --e-tinta-fraca: #b79f90;
+  --e-vinho: #d48995;
+  --e-vinho-tinta: #2f1117;
+  --e-vinho-escuro: #471d26;
+  --e-ok: #508f75;
+  --e-ok-fundo: #1a3228;
+  --e-ok-tinta: #a4d2bd;
+  --lia: #2f8c84;
+  --lia-claro: #b0ded7;
+  --lia-brilho: #7fc6bc;
+  --lia-escuro: #0a2221;
+  --lia-borda: #184845;
+  --lia-faisca: #e2ce80;
+  --lia-rosto: #0a2221;
+  --lia-bochecha: #d48995;
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-mola: cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--e-fundo);
 }
 .elo {
   position: absolute;
@@ -930,8 +954,15 @@ button {
   gap: 0.9em;
   padding: clamp(16px, 5%, 28px);
   line-height: 1.25;
-  color: #f2e9d8;
+  color: var(--e-tinta);
   user-select: none;
+}
+.elo svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .elo-topo {
   display: flex;
@@ -945,41 +976,26 @@ button {
 }
 .elo-titulo {
   font-size: 1.3em;
-  color: #f2e9d8;
 }
 .elo-semana {
   margin-left: auto;
   padding: 0.25em 0.8em;
   border-radius: 999px;
-  border: 1px solid #5c4840;
+  border: 1px solid var(--e-fio-forte);
   font-size: 0.78em;
-  color: #d6c1b0;
+  color: var(--e-tinta-suave);
 }
-.elo-grade {
+
+/* O dia: as horas e a trilha dos agendamentos. */
+.elo-dia {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 2.4em minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  padding: 0.7em 0.7em 0.7em 0.2em;
+  grid-template-columns: 2.6em minmax(0, 1fr);
+  padding: 0.9em 0.8em 0.8em 0.2em;
   border-radius: 14px;
-  border: 1px solid #45342f;
-  background: #2f221e;
-}
-.elo-dias {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 2.4em repeat(6, minmax(0, 1fr));
-  padding-bottom: 0.5em;
-  font-size: 0.74em;
-  text-align: center;
-  color: #b79f90;
-}
-.elo-dias span {
-  transition: color 0.3s;
-}
-.elo-dias .aceso {
-  color: #e7b5bc;
+  border: 1px solid var(--e-fio);
+  background: var(--e-sup);
 }
 .elo-horas {
   display: flex;
@@ -991,135 +1007,519 @@ button {
   flex: 1;
   translate: 0 -0.55em;
   text-align: right;
-  padding-right: 0.6em;
+  padding-right: 0.7em;
 }
-.elo-celas {
+.elo-trilha {
   position: relative;
-  border-left: 1px solid #45342f;
-  background:
-    repeating-linear-gradient(to bottom, #45342f 0 1px, transparent 1px var(--lin, 40px)),
-    repeating-linear-gradient(to right, rgb(69 52 47 / 0.55) 0 1px, transparent 1px var(--col, 60px));
-}
-.elo-coluna {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom, rgb(212 137 149 / 0), rgb(212 137 149 / 0.22) 45%, rgb(212 137 149 / 0));
-  opacity: 0;
+  border-left: 1px solid var(--e-fio);
+  background: repeating-linear-gradient(to bottom, var(--e-fio) 0 1px, transparent 1px var(--lin, 40px));
 }
 .elo-ag,
-.elo-voo {
+.elo-livre,
+.elo-bloqueio {
   position: absolute;
-  overflow: hidden;
+  left: 4px;
+  right: 2px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  padding: 0.35em 0.45em;
-  border-radius: 7px;
-  border-left: 3px solid #80836d;
-  background: #3a2b26;
-  font-size: 0.62em;
+  justify-content: center;
+  padding: 0 0.7em;
+  border-radius: 8px;
+  font-size: 0.74em;
   line-height: 1.2;
 }
-.elo-ag b,
-.elo-voo b {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.elo-ag {
+  border-left: 3px solid #80836d;
+  background: var(--e-sup-forte);
+  transition: border-color 0.4s, background 0.4s;
+}
+.elo-ag b {
   font-weight: 500;
-  color: #f2e9d8;
 }
-.elo-ag span,
-.elo-voo span span {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: #b79f90;
+.elo-ag span {
+  color: var(--e-tinta-fraca);
 }
-.elo-rodape {
-  display: flex;
-  justify-content: flex-end;
+.elo-ag em {
+  position: absolute;
+  right: 0.7em;
+  top: 50%;
+  width: 1.5em;
+  height: 1.5em;
+  margin-top: -0.75em;
+  padding: 0.3em;
+  border-radius: 50%;
+  background: var(--e-ok-fundo);
+  color: var(--e-ok-tinta);
+  scale: 0;
+  transition: scale 0.45s var(--ease-mola);
 }
-.elo-novo,
-.elo-agendar {
+.elo-ag em svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke-width: 3;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  transition: stroke-dashoffset 0.4s 0.15s var(--ease-saida);
+}
+.elo-ag.realizado {
+  border-left-color: var(--e-ok);
+  background: color-mix(in srgb, var(--e-ok-fundo) 70%, var(--e-sup-forte));
+}
+.elo-ag.realizado em {
+  scale: 1;
+}
+.elo-ag.realizado em svg {
+  stroke-dashoffset: 0;
+}
+.elo-livre {
+  align-items: center;
+  border: 1px dashed var(--e-fio-forte);
+  color: #937a6d;
+}
+.elo-bloqueio {
+  align-items: center;
+  gap: 0.2em;
+  border: 1px solid var(--e-fio-forte);
+  background: repeating-linear-gradient(-45deg, rgb(214 193 176 / 0.1) 0 6px, transparent 6px 12px), var(--e-sup);
+  color: var(--e-tinta-suave);
+  opacity: 0;
+}
+.elo-bloqueio b {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.45em;
-  padding: 0.75em 1.3em;
-  border-radius: 999px;
-  background: #d48995;
+  gap: 0.4em;
   font-weight: 500;
-  color: #2f1117;
+  color: var(--e-tinta);
 }
-.elo-novo i {
-  font-style: normal;
-  font-size: 1.2em;
-  line-height: 1;
+.elo-bloqueio svg {
+  width: 1.1em;
+  height: 1.1em;
 }
-.elo-veu {
+
+/* O botão da Lia, no canto: ela respira e olha em volta. */
+.elo-fab {
   position: absolute;
-  inset: 0;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
+  z-index: 2;
+  left: clamp(16px, 5%, 28px);
+  bottom: clamp(16px, 5%, 28px);
+  display: grid;
+  place-items: center;
+  width: 4.4em;
+  height: 4.4em;
+  border-radius: 50%;
+  border: 1px solid var(--lia-borda);
+  background: radial-gradient(circle at 50% 40%, #12302d, var(--lia-escuro));
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45), 0 0 24px rgb(79 169 159 / 0.25);
 }
-.elo-folha {
+.elo-fab-lia {
+  width: 3.5em;
+  height: 3.5em;
+}
+.elo-ponto {
   position: absolute;
+  top: 0.35em;
+  right: 0.35em;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 50%;
+  border: 2px solid var(--lia-escuro);
+  background: var(--lia-faisca);
+  scale: 0;
+  transition: scale 0.35s var(--ease-mola);
+}
+.elo-ponto.vivo {
+  scale: 1;
+}
+
+/* A janela da Lia: sobe do canto, com a aurora verde-água por trás da conversa. */
+.elo-chat {
+  position: absolute;
+  z-index: 3;
   left: 0;
   right: 0;
   bottom: 0;
+  top: 40%;
   display: flex;
   flex-direction: column;
-  gap: 0.7em;
-  padding: 0.8em clamp(16px, 6%, 30px) clamp(18px, 6%, 30px);
+  overflow: hidden;
   border-radius: 20px 20px 0 0;
-  border-top: 1px solid #5c4840;
-  background: #3a2b26;
-  box-shadow: 0 -18px 40px rgb(0 0 0 / 0.35);
+  border-top: 1px solid var(--lia-borda);
+  background: #1a1513;
+  box-shadow: 0 -18px 50px rgb(0 0 0 / 0.5);
   visibility: hidden;
 }
-.elo-alca {
-  align-self: center;
-  width: 2.6em;
-  height: 4px;
-  border-radius: 4px;
-  background: #5c4840;
+.elo-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
-.elo-folha-titulo {
-  margin: 0 0 0.2em;
-  font-size: 1.2em;
+.elo-aurora i {
+  position: absolute;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(47 140 132 / 0.3), transparent 65%);
+  filter: blur(10px);
+  animation: lia-deriva-a 9s ease-in-out infinite alternate;
 }
-.elo-campo {
+.elo-aurora i:first-child {
+  top: -30%;
+  left: -15%;
+}
+.elo-aurora i:last-child {
+  top: 20%;
+  right: -25%;
+  background: radial-gradient(circle, rgb(226 206 128 / 0.12), transparent 65%);
+  animation-name: lia-deriva-b;
+  animation-duration: 11s;
+}
+@keyframes lia-deriva-a {
+  to {
+    transform: translate(30%, 18%) scale(1.15);
+  }
+}
+@keyframes lia-deriva-b {
+  to {
+    transform: translate(-25%, 22%) scale(0.9);
+  }
+}
+.elo-chat-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.7em clamp(14px, 4.5%, 24px) 0.6em;
+  border-bottom: 1px solid rgb(24 72 69 / 0.7);
+}
+.elo-topo-lia {
+  width: 4em;
+  height: 4em;
+  margin: -0.5em -0.2em -0.5em -0.5em;
+}
+.elo-quem {
   display: flex;
   flex-direction: column;
-  gap: 0.15em;
-  min-height: 3.3em;
-  padding: 0.5em 0.9em;
-  border-radius: 10px;
-  border: 1px solid #5c4840;
-  background: #2f221e;
+  min-width: 0;
+  flex: 1;
+}
+.elo-quem b {
+  font-weight: 600;
+  font-size: 1.05em;
+}
+.elo-status {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.78em;
+  color: var(--lia-brilho);
+}
+.elo-acao {
+  display: grid;
+  place-items: center;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  color: var(--e-tinta-suave);
+}
+.elo-acao svg {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+/* A conversa: as mensagens novas entram por baixo e empurram as antigas. */
+.elo-msgs {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.6em;
+  overflow: hidden;
+  padding: 0.6em clamp(14px, 4.5%, 24px);
+  mask-image: linear-gradient(to bottom, transparent, #000 2.5em);
+}
+.elo-msg {
+  display: none;
+  flex: none;
+  font-size: 0.86em;
+}
+.elo-msg.vivo {
+  display: flex;
+  animation: elo-surge 0.32s var(--ease-saida) both;
+}
+@keyframes elo-surge {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.elo-eu {
+  align-self: flex-end;
+  max-width: 82%;
+  padding: 0.6em 0.9em;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--e-vinho-escuro);
+}
+.elo-ela {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45em;
+  max-width: 92%;
+}
+.elo-ela p {
+  margin: 0;
+}
+/* As letras da Lia acendem uma a uma, no verde-água, e assentam na cor do texto. */
+.elo-ela.vivo p i {
+  font-style: normal;
+  animation: lia-letra 0.6s ease-out both;
+  animation-delay: calc(var(--k) * 18ms);
+}
+@keyframes lia-letra {
+  0% {
+    opacity: 0;
+    color: var(--lia-brilho);
+    text-shadow: 0 0 8px var(--lia-brilho);
+  }
+  45% {
+    opacity: 1;
+    color: var(--lia-claro);
+    text-shadow: 0 0 6px rgb(127 198 188 / 0.6);
+  }
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 0 transparent;
+  }
+}
+.elo-desfazer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.35em 0.8em;
+  border-radius: 999px;
+  border: 1px solid var(--lia-borda);
+  font-size: 0.9em;
+  color: var(--lia-claro);
+  animation: elo-surge 0.4s 0.7s var(--ease-saida) both;
+}
+.elo-desfazer svg {
+  width: 1em;
+  height: 1em;
+}
+.elo-numeros ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.25em;
+}
+.elo-numeros li {
+  color: var(--e-tinta-suave);
+  animation: elo-surge 0.4s var(--ease-saida) both;
+}
+.elo-numeros li:nth-child(1) { animation-delay: 0.25s; }
+.elo-numeros li:nth-child(2) { animation-delay: 0.37s; }
+.elo-numeros li:nth-child(3) { animation-delay: 0.49s; }
+.elo-numeros li:nth-child(4) { animation-delay: 0.61s; }
+.elo-numeros b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--e-tinta);
+}
+
+/* O cartão da prévia: nasce com o brilho da Lia, e nada muda antes do toque. */
+.elo-cartao {
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 0.85em 0.95em;
+  border-radius: 14px;
+  border: 1px solid var(--e-fio-forte);
+  background: var(--e-sup);
+}
+.elo-cartao.vivo {
+  animation: lia-bolha-forma 0.7s var(--ease-saida) both;
+}
+@keyframes lia-bolha-forma {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+    box-shadow: 0 0 0 1px var(--lia-brilho), 0 0 18px rgb(127 198 188 / 0.5);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    box-shadow: 0 0 0 0 transparent, 0 0 0 transparent;
+  }
+}
+.elo-c-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0;
+  font-weight: 600;
+}
+.elo-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-left: auto;
+  padding: 0.2em 0.65em;
+  border-radius: 999px;
+  border: 1px solid var(--e-ok);
+  background: var(--e-ok-fundo);
+  font-size: 0.8em;
+  font-weight: 500;
+  color: var(--e-ok-tinta);
+  scale: 0;
+  transition: scale 0.4s var(--ease-mola);
+}
+.elo-selo svg {
+  width: 1em;
+  height: 1em;
+  stroke-width: 3;
+}
+.elo-cartao.feito .elo-selo {
+  scale: 1;
+}
+.elo-cartao dl {
+  display: grid;
+  gap: 0.35em;
+  margin: 0;
+}
+.elo-cartao dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+}
+.elo-cartao dt {
+  color: var(--e-tinta-fraca);
+}
+.elo-cartao dd {
+  margin: 0;
+  text-align: right;
+}
+.elo-cartao ul {
+  display: grid;
+  gap: 0.4em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.elo-cartao li {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  transition: color 0.3s;
+}
+.elo-cartao li i {
+  flex: none;
+  width: 1.35em;
+  height: 1.35em;
+  padding: 0.22em;
+  border-radius: 50%;
+  border: 1.5px solid var(--e-fio-forte);
+  transition: background 0.3s, border-color 0.3s;
+}
+.elo-cartao li svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke-width: 3.2;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  color: var(--e-ok-fundo);
+  transition: stroke-dashoffset 0.35s 0.1s var(--ease-saida);
+}
+.elo-cartao li.ok i {
+  border-color: var(--e-ok-tinta);
+  background: var(--e-ok-tinta);
+  animation: lia-escolhe 0.45s var(--ease-mola);
+}
+.elo-cartao li.ok svg {
+  stroke-dashoffset: 0;
+}
+@keyframes lia-escolhe {
+  50% {
+    transform: scale(1.25);
+  }
+}
+.elo-botoes {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.15em;
+}
+.elo-sim,
+.elo-nao {
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.elo-sim {
+  background: var(--e-vinho);
+  color: var(--e-vinho-tinta);
+  transition: opacity 0.2s;
+}
+.elo-sim.fazendo {
+  opacity: 0.6;
+}
+.elo-nao {
+  border: 1px solid var(--e-fio-forte);
+  color: var(--e-tinta-suave);
+}
+.elo-cartao.feito .elo-botoes,
+.elo-c2.fazendo .elo-botoes {
+  display: none;
+}
+.elo-fazendo {
+  display: none;
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--lia-brilho);
+}
+.elo-c2.fazendo .elo-fazendo {
+  display: block;
+}
+
+/* O campo do pedido. */
+.elo-campo-lia {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin: 0.2em clamp(14px, 4.5%, 24px) clamp(12px, 4%, 20px);
+  padding: 0.45em 0.45em 0.45em 0.95em;
+  border-radius: 999px;
+  border: 1px solid var(--e-fio-forte);
+  background: var(--e-sup);
+  font-size: 0.86em;
   transition: border-color 0.25s, box-shadow 0.25s;
 }
-.elo-campo small {
-  font-size: 0.7em;
-  color: #b79f90;
+.elo-campo-lia.em-foco {
+  border-color: var(--lia-brilho);
+  box-shadow: 0 0 0 3px rgb(127 198 188 / 0.18);
 }
-.elo-campo span {
+.elo-escrito {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
   min-height: 1.25em;
 }
-.elo-campo.em-foco {
-  border-color: #d48995;
-  box-shadow: 0 0 0 3px rgb(212 137 149 / 0.2);
-}
-.elo-campo.em-foco span::after {
+.elo-campo-lia.em-foco .elo-escrito::after {
   content: "";
   display: inline-block;
   width: 1px;
   height: 1.05em;
   margin-left: 1px;
   vertical-align: -0.15em;
-  background: #e7b5bc;
+  background: var(--lia-claro);
   animation: elo-cursor 0.9s steps(1) infinite;
 }
 @keyframes elo-cursor {
@@ -1127,80 +1527,50 @@ button {
     opacity: 0;
   }
 }
-.elo-agendar {
-  margin-top: 0.3em;
+.elo-dica {
+  position: absolute;
+  left: 1.1em;
+  right: 3.4em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #937a6d;
+  pointer-events: none;
 }
-.elo-voo {
-  z-index: 2;
-  visibility: hidden;
-  transform-origin: center;
+.elo-enviar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 50%;
+  background: var(--e-sup-forte);
+  color: var(--e-tinta-fraca);
+  transition: background 0.2s, color 0.2s;
 }
-.elo-voo > span {
+.elo-enviar.pronto {
+  background: var(--lia);
+  color: #fdfbf7;
+}
+.elo-enviar svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+.elo-magia {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0.35em 0.45em;
-}
-.elo-voo .elo-voo-botao {
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6em;
-  font-weight: 500;
-  color: #2f1117;
-}
-.elo-voo-cancelado b {
-  color: #feb094;
-  text-decoration: line-through;
-}
-.elo-balao {
-  position: absolute;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3em;
-  padding: 0.8em 0.9em;
-  border-radius: 12px;
-  border: 1px solid #5c4840;
-  background: #3a2b26;
-  box-shadow: 0 14px 34px rgb(0 0 0 / 0.5);
-  font-size: 0.82em;
-  white-space: nowrap;
-  visibility: hidden;
-  transform-origin: center bottom;
-}
-.elo-balao b {
-  font-weight: 500;
-}
-.elo-balao > span:not(.elo-cancelar) {
-  color: #d6c1b0;
-}
-.elo-cancelar {
-  margin-top: 0.4em;
-  padding: 0.55em 1em;
-  border-radius: 999px;
-  border: 1px solid #db5c2f;
-  text-align: center;
-  color: #feb094;
-}
-.elo-aviso {
-  position: absolute;
   z-index: 4;
-  top: clamp(14px, 4%, 24px);
-  left: 50%;
-  padding: 0.5em 1.1em;
-  border-radius: 999px;
-  border: 1px solid #508f75;
-  background: #1a3228;
-  font-size: 0.82em;
-  white-space: nowrap;
-  color: #a4d2bd;
-  opacity: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
-.elo-aviso.perigo {
-  border-color: #db5c2f;
-  background: #5b1907;
-  color: #feb094;
+.elo-fim {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: var(--e-fundo);
+  pointer-events: none;
 }
 .elo-dedo {
   position: absolute;
@@ -1222,6 +1592,207 @@ button {
   border: 2px solid #fff;
   opacity: var(--anel-op, 0);
   scale: calc(1 + var(--anel, 0) * 1.6);
+}
+
+/* ---- A Lia (o personagem do ELO, no modo escuro) ----------------------------------- */
+.lia {
+  display: block;
+  flex: none;
+  position: relative;
+}
+.lia-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.lia-svg * {
+  transform-box: fill-box;
+  transform-origin: center;
+  stroke: none;
+}
+.lia-svg [transform] {
+  transform-box: view-box;
+  transform-origin: 0 0;
+}
+.lia-svg :is(.lia-halo, .lia-anel, .lia-orbita) {
+  transform-box: view-box;
+  transform-origin: 32px 33px;
+}
+.lia-svg .lia-corpo {
+  transform-box: view-box;
+  transform-origin: 32px 50px;
+}
+.lia-svg .lia-confete > * {
+  transform-box: view-box;
+  transform-origin: 32px 33px;
+}
+.lia-brilho { fill: rgb(253 251 247 / 0.3); }
+.lia-bochecha { fill: var(--lia-bochecha); opacity: 0.38; transition: opacity 300ms; }
+.lia-pupila { fill: var(--lia-rosto); transition: transform 260ms var(--ease-saida); }
+.lia-reflexo { fill: #fdfbf7; }
+.lia-olho { transition: opacity 140ms; }
+.lia-svg .lia-fechado { fill: none; stroke: var(--lia-rosto); stroke-width: 1.8; stroke-linecap: round; opacity: 0; transition: opacity 140ms; }
+.lia-olhos { transition: transform 320ms var(--ease-saida); }
+.lia-svg .lia-sobrancelha { fill: none; stroke: var(--lia-rosto); stroke-width: 1.5; stroke-linecap: round; opacity: 0.82; transition: transform 340ms var(--ease-mola); }
+.lia-svg .lia-boca { fill: var(--lia-rosto); stroke: var(--lia-rosto); stroke-width: 1.5; stroke-linejoin: round; }
+.lia-lingua { fill: var(--lia-bochecha); opacity: 0; transition: opacity 200ms; }
+.lia-svg .lia-anel { fill: none; stroke: var(--lia-brilho); stroke-width: 1.8; stroke-linecap: round; stroke-dasharray: 0 100; opacity: 0; transition: opacity 300ms; }
+.lia-faisca { fill: var(--lia-faisca); }
+.lia-halo { opacity: 0.65; }
+.lia-p { opacity: 0; transition: opacity 220ms; }
+.lia-svg .lia-cartao { fill: var(--e-sup); stroke: var(--lia-brilho); stroke-width: 1; }
+.lia-svg .lia-linhas { fill: none; stroke: var(--e-tinta-suave); stroke-width: 1.1; stroke-linecap: round; opacity: 0.6; }
+.lia-realce { fill: var(--lia-faisca); opacity: 0.4; }
+.lia-svg .lia-ico { fill: none; stroke: var(--lia-claro); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.lia-svg .lia-ico * { stroke: inherit; }
+[data-dominio="agenda"] .lia-ico-agenda,
+[data-dominio="dinheiro"] .lia-ico-dinheiro { opacity: 1; }
+.lia-svg .lia-onda { fill: none; stroke: var(--lia-brilho); stroke-width: 1; }
+.lia-digito { fill: var(--e-tinta); font: 600 8px/1 sans-serif; font-variant-numeric: tabular-nums; text-anchor: middle; }
+.lia-svg .lia-m-borda { fill: var(--e-sup); stroke: var(--lia-brilho); stroke-width: 1; stroke-dasharray: 100; }
+.lia-m-l { fill: var(--e-fio-forte); }
+.lia-m-b { fill: var(--e-vinho); }
+.lia-svg .lia-trilho { fill: var(--lia-escuro); stroke: var(--lia-borda); stroke-width: 0.4; }
+.lia-svg .lia-enche { fill: var(--lia-brilho); transform-origin: 0% 50%; }
+.lia-enche.lia-e2 { fill: var(--lia-faisca); }
+.lia-estrelas path,
+.lia-confete .lia-es { fill: var(--lia-faisca); }
+.lia-confete .lia-bo { fill: var(--lia-brilho); }
+.lia-confete .lia-ro { fill: var(--lia-bochecha); }
+.lia-svg .lia-corpo-b { fill: var(--e-sup); stroke: var(--lia-brilho); stroke-width: 1; }
+
+/* Repouso: respira, pisca, espia e a faísca dá a volta. */
+.lia .lia-corpo { animation: lia-respira 4.2s ease-in-out infinite; }
+.lia .lia-olho { animation: lia-pisca 5.6s ease-in-out var(--lia-atraso, 0s) infinite; }
+.lia .lia-olhos { animation: lia-espia 12s ease-in-out var(--lia-atraso, 0s) infinite; }
+.lia .lia-orbita { animation: lia-orbita 9s linear infinite; }
+.lia .lia-halo { animation: lia-halo 4.2s ease-in-out infinite; }
+.lia:not([data-estado="repouso"]) .lia-olhos,
+.lia.olha .lia-olhos { animation: none; }
+
+/* Oi: um pulinho e uma piscadela. */
+[data-estado="oi"] .lia-corpo { animation: lia-pulo-oi 1.8s var(--ease-saida); }
+[data-estado="oi"] .lia-olho.lia-d { opacity: 0; }
+[data-estado="oi"] .lia-piscadela { opacity: 1; }
+[data-estado="oi"] .lia-sobrancelha { transform: translateY(-1.8px); }
+[data-estado="oi"] .lia-sobrancelha.lia-d { transform: translateY(-0.6px) rotate(10deg); }
+[data-estado="oi"] .lia-bochecha { opacity: 0.8; }
+[data-estado="oi"] .lia-lingua { opacity: 1; }
+[data-estado="oi"] .lia-halo { animation: lia-halo-forte 1.2s ease-in-out infinite; }
+[data-estado="oi"] .lia-orbita { animation: lia-orbita 1.6s var(--ease-saida); }
+
+/* Lendo: a bolha do pedido, com o realce que corre as linhas. */
+[data-estado="lendo"] .lia-olhos { transform: translate(-2.1px, -2px); }
+[data-estado="lendo"] .lia-sobrancelha { transform: translateY(-1.2px); }
+[data-estado="lendo"] .lia-bolha { opacity: 1; animation: lia-surge-p 420ms var(--ease-mola) both; }
+[data-estado="lendo"] .lia-bolha .lia-realce { animation: lia-varre 1.6s ease-in-out infinite; }
+[data-estado="lendo"] .lia-faisca { animation: lia-cintila 1s ease-in-out infinite; }
+
+/* Consultando: o selo da área com a onda e o feixe de luz. */
+[data-estado="consultando"] .lia-selo { opacity: 1; animation: lia-surge-p 420ms var(--ease-mola) both; }
+[data-estado="consultando"] .lia-selo .lia-onda { animation: lia-onda 1.4s ease-out infinite; }
+[data-estado="consultando"] .lia-feixe { opacity: 0.8; animation: lia-feixe 1.2s ease-in-out infinite; }
+[data-estado="consultando"] .lia-olhos { transform: translate(2px, 2.1px); }
+[data-estado="consultando"] .lia-pupila { transform: scaleY(0.85); }
+[data-estado="consultando"] .lia-orbita { animation-duration: 3s; }
+[data-estado="consultando"] .lia-halo { animation: lia-halo-forte 1.4s ease-in-out infinite; }
+
+/* Montando: o cartão se desenha, com o anel girando. */
+[data-estado="montando"] .lia-monta { opacity: 1; }
+[data-estado="montando"] .lia-m-borda { animation: lia-desenha-aro 2.2s var(--ease-saida) infinite both; }
+[data-estado="montando"] :is(.lia-m-l, .lia-m-b) { animation: lia-linha-entra 2.2s var(--ease-saida) infinite both; }
+[data-estado="montando"] .lia-m-l2 { animation-delay: 120ms; }
+[data-estado="montando"] .lia-m-l3 { animation-delay: 240ms; }
+[data-estado="montando"] .lia-m-b { animation-delay: 360ms; }
+[data-estado="montando"] .lia-olhos { transform: translate(2.1px, 2px); }
+[data-estado="montando"] .lia-anel { opacity: 1; stroke-dasharray: 32 68; animation: lia-gira 1s linear infinite; }
+[data-estado="montando"] .lia-orbita { animation-duration: 1.4s; }
+
+/* Calculando: os dígitos rolam, cada coluna num ritmo. */
+[data-estado="calculando"] .lia-digitos { opacity: 1; animation: lia-surge-p 360ms var(--ease-mola) both; }
+[data-estado="calculando"] .lia-col1 { animation: lia-rola 0.9s linear infinite; }
+[data-estado="calculando"] .lia-col2 { animation: lia-rola 1.3s linear infinite; }
+[data-estado="calculando"] .lia-col3 { animation: lia-rola 0.7s linear infinite; }
+[data-estado="calculando"] .lia-olhos { transform: translate(1.4px, -2.2px); }
+[data-estado="calculando"] .lia-sobrancelha.lia-d { transform: translateY(-1.8px) rotate(-10deg); }
+[data-estado="calculando"] .lia-orbita { animation-duration: 1.4s; }
+
+/* Escrevendo: a boca fala e solta faíscas. */
+[data-estado="escrevendo"] .lia-boca { animation: lia-fala 520ms ease-in-out infinite; }
+[data-estado="escrevendo"] .lia-olhos { transform: translate(1.4px, 0.4px); }
+[data-estado="escrevendo"] .lia-estrelas { opacity: 1; }
+[data-estado="escrevendo"] .lia-estrelas path { animation: lia-solta 1.3s ease-out infinite; }
+[data-estado="escrevendo"] .lia-estrelas path:nth-child(2) { animation-delay: -0.43s; }
+[data-estado="escrevendo"] .lia-estrelas path:nth-child(3) { animation-delay: -0.86s; }
+[data-estado="escrevendo"] .lia-halo { animation: lia-halo-forte 1s ease-in-out infinite; }
+
+/* Executando: as barras enchem, concentrada. */
+[data-estado="executando"] .lia-barras { opacity: 1; animation: lia-surge-p 380ms var(--ease-mola) both; }
+[data-estado="executando"] .lia-enche.lia-e1 { transform: scaleX(0.8); animation: lia-barra 1.3s var(--ease-saida) 200ms infinite; }
+[data-estado="executando"] .lia-enche.lia-e2 { transform: scaleX(0.45); animation: lia-barra 1.9s var(--ease-saida) 450ms infinite; }
+[data-estado="executando"] .lia-enche.lia-e3 { transform: scaleX(0.6); animation: lia-barra 1s var(--ease-saida) 700ms infinite; }
+[data-estado="executando"] .lia-olhos { transform: translate(1.8px, 1.6px); }
+[data-estado="executando"] .lia-pupila { transform: scaleY(0.68); }
+[data-estado="executando"] .lia-sobrancelha.lia-e { transform: translateY(1px) rotate(10deg); }
+[data-estado="executando"] .lia-sobrancelha.lia-d { transform: translateY(1px) rotate(-10deg); }
+[data-estado="executando"] .lia-anel { opacity: 1; stroke-dasharray: 66 34; animation: lia-gira 0.8s linear infinite; }
+[data-estado="executando"] .lia-orbita { animation-duration: 1s; }
+[data-estado="executando"] .lia-halo { animation: lia-halo-forte 0.7s ease-in-out infinite; }
+
+/* Feito: olhos felizes, o pulo, o anel que abre e o confete. */
+[data-estado="feito"] .lia-olho { opacity: 0; }
+[data-estado="feito"] .lia-feliz { opacity: 1; }
+[data-estado="feito"] .lia-lingua { opacity: 1; }
+[data-estado="feito"] .lia-bochecha { opacity: 0.9; }
+[data-estado="feito"] .lia-sobrancelha { transform: translateY(-2px); }
+[data-estado="feito"] .lia-corpo { animation: lia-pulo-feito 2.2s var(--ease-saida); }
+[data-estado="feito"] .lia-anel { stroke-dasharray: 100 0; animation: lia-anel-abre 2.2s var(--ease-saida) both; }
+[data-estado="feito"] .lia-confete { opacity: 1; }
+[data-estado="feito"] .lia-confete > * { opacity: 0.9; transform: translate(var(--dx), var(--dy)); animation: lia-estoura 2.2s var(--ease-saida) both; }
+[data-estado="feito"] .lia-orbita { animation: lia-orbita 1.1s var(--ease-saida); }
+[data-estado="feito"] .lia-faisca { animation: lia-cintila 1.2s ease-in-out infinite; }
+[data-estado="feito"] .lia-halo { animation: lia-halo-forte 1.1s ease-in-out infinite; }
+
+@keyframes lia-respira { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035, 1.045); } }
+@keyframes lia-pisca { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes lia-espia { 0%, 52%, 88%, 100% { transform: translate(0, 0); } 58%, 66% { transform: translate(-1.8px, -0.5px); } 72%, 80% { transform: translate(1.8px, -0.5px); } }
+@keyframes lia-orbita { to { transform: rotate(360deg); } }
+@keyframes lia-halo { 0%, 100% { opacity: 0.5; transform: scale(0.97); } 50% { opacity: 0.8; transform: scale(1.03); } }
+@keyframes lia-halo-forte { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes lia-gira { to { transform: rotate(360deg); } }
+@keyframes lia-cintila { 0%, 100% { opacity: 0.3; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.3); } }
+@keyframes lia-surge-p { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: none; } }
+@keyframes lia-pulo-oi {
+  0% { transform: none; }
+  10% { transform: translateY(1px) scale(1.08, 0.9); }
+  26% { transform: translateY(-5px) scale(0.95, 1.07) rotate(-4deg); }
+  42% { transform: translateY(0) scale(1.04, 0.96) rotate(2deg); }
+  54%, 100% { transform: none; }
+}
+@keyframes lia-varre { 0% { transform: translate(0, 0); } 35% { transform: translate(6px, 0); } 50% { transform: translate(0, 3px); } 85%, 100% { transform: translate(2.6px, 3px); } }
+@keyframes lia-feixe { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.9; } }
+@keyframes lia-onda { 0% { opacity: 0.8; transform: scale(0.9); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes lia-rola { from { transform: translateY(0); } to { transform: translateY(-90px); } }
+@keyframes lia-desenha-aro { 0% { stroke-dashoffset: 100; opacity: 0; } 8% { opacity: 1; } 36%, 100% { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes lia-linha-entra { 0%, 32% { opacity: 0; transform: scaleX(0); } 52%, 100% { opacity: 1; transform: none; } }
+@keyframes lia-fala { 0%, 100% { transform: scaleY(0.45); } 25% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } 75% { transform: scaleY(0.95); } }
+@keyframes lia-solta { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.1) rotate(90deg); } }
+@keyframes lia-barra { 0% { transform: scaleX(0); opacity: 1; } 62%, 82% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes lia-pulo-feito {
+  0% { transform: none; }
+  10% { transform: translateY(1.5px) scale(1.12, 0.86); }
+  26% { transform: translateY(-7px) scale(0.93, 1.1); }
+  40% { transform: translateY(0) scale(1.08, 0.92); }
+  50% { transform: scale(0.98, 1.02); }
+  58%, 100% { transform: none; }
+}
+@keyframes lia-anel-abre { 0%, 8% { opacity: 0; transform: scale(0.8); } 18% { opacity: 1; transform: scale(1); } 55%, 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes lia-estoura {
+  0%, 10% { opacity: 0; transform: translate(0, 0) scale(0.2); }
+  20% { opacity: 1; }
+  55% { opacity: 1; transform: translate(var(--dx), var(--dy)) scale(1) rotate(120deg); }
+  80%, 100% { opacity: 0; transform: translate(calc(var(--dx) * 1.15), calc(var(--dy) * 1.15 + 5px)) scale(0.6) rotate(200deg); }
 }
 
 .sem-script {
